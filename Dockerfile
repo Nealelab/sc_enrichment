@@ -11,14 +11,20 @@ RUN apt-get update --fix-missing && \
 
 RUN pip install google-compute-engine joblib==0.11 pandas==0.19.2 numpy==1.11.3 scipy==0.18.1 bitarray==0.8.1 pybedtools==0.7.10
 
-RUN git clone https://github.com/Nealelab/sc_enrichement.git /home/sc_enrichement/
-RUN chmod +x /home/sc_enrichement/main.py
 
-RUN git clone https://github.com/omeed-maghzian/mtag.git /home/mtag/
-RUN chmod +x /home/mtag/mtag.py
+RUN	mkdir -p /home/mtag/ && \
+    wget --quiet -P /home/mtag/ https://github.com/omeed-maghzian/mtag/archive/master.zip && \
+    unzip -q /home/mtag/master.zip -d /home/mtag
 
-RUN git clone https://github.com/bulik/ldsc.git /home/ldsc/
-RUN chmod +x /home/ldsc/ldsc.py
+RUN	mkdir -p /home/ldscore/ && \
+	wget --quiet -P /home/ldscore/ https://github.com/bulik/ldsc/archive/master.zip && \
+    unzip -q /home/ldscore/master.zip -d /home/ldscore
+
+
+RUN	mkdir -p /home/sc_enrichement/ && \
+	wget --quiet -P /home/sc_enrichement/ https://github.com/Nealelab/sc_enrichement/archive/master.zip && \
+    unzip -q /home/sc_enrichement/master.zip -d /home/sc_enrichement
+
 
 RUN curl -sSL https://sdk.cloud.google.com | bash
 

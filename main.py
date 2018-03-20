@@ -12,8 +12,8 @@ import os
 from pybedtools import BedTool
 from argparse import Namespace
 
-sys.path.insert(0, '/home/ldsc/')
-sys.path.insert(0, '/home/mtag/')
+sys.path.insert(0, '/home/ldsc/ldsc-master/')
+sys.path.insert(0, '/home/mtag/mtag-master/')
 
 import ldscore.ldscore as ldsc
 import ldscore.sumstats as sumst
@@ -101,6 +101,10 @@ def download_files(args,ss_list):
     logging.info('Downloading file to map genes to positions')
     subprocess.call(['gsutil','cp',args.gene_anno_pos_file,'/home/GENENAME_gene_annot.txt'])
 
+    # Download main annotation file
+    logging.info('Downloading main annotation file')
+    subprocess.call(['gsutil','cp',args.main_annot_file,'/home/'])
+
     # Download summary stats
     for ss in ss_list:
         logging.info('Downloading summary statistics')
@@ -117,7 +121,7 @@ def prepare_annotations(args,gene_list,outldscore,plink_panel):
     for chrom in range(1, 23):
 
         logging.debug('Running genesets_to_ldscores.py for chr ' + str(chrom) )
-        subprocess.call(['/home/sc_enrichement/genesets_to_ldscores.py',
+        subprocess.call(['/home/sc_enrichement/sc_enrichement-master/genesets_to_ldscores.py',
                         '--geneset-file',gene_list,
                         '--gene-annot',"/home/GENENAME_gene_annot.txt",
                         '--bfile-chr',plink_panel,
@@ -127,7 +131,7 @@ def prepare_annotations(args,gene_list,outldscore,plink_panel):
                         '--chrom', str(chrom)])
 
         logging.debug('Running ldsc.py for chr ' + str(chrom) )
-        subprocess.call(['/home/ldsc/ldsc.py',
+        subprocess.call(['/home/ldsc/ldsc-master/ldsc.py',
                         '--l2',
                         '--bfile',plink_panel + str(chrom),
                         '--ld-wind-cm', "1",
@@ -253,7 +257,7 @@ if __name__ == "__main__":
     logging.debug('plink_panel: ' + plink_panel)
 
     # Create annotations for main outcome 
-    prepare_annotations(args,gene_list=args.main_annot_file, outldscore='/home/outld/' + args.ldscores_prefix, plink_panel=plink_panel)
+    prepare_annotations(args,gene_list='/home/' + os.path.basename(args.main_annot_file), outldscore='/home/outld/' + args.ldscores_prefix, plink_panel=plink_panel)
 
     # If provided, prepare annotation for conditioning gene lists
     if args.condition_annot_file:
