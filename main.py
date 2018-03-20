@@ -12,8 +12,8 @@ import os
 from pybedtools import BedTool
 from argparse import Namespace
 
-sys.path.insert(0, '/home/ldscore/ldsc-master/')
-sys.path.insert(0, '/home/mtag/mtag-master/')
+sys.path.insert(0, '/home/ldsc-master/')
+sys.path.insert(0, '/home/mtag-master/')
 
 import ldscore.ldscore as ldsc
 import ldscore.sumstats as sumst
@@ -22,10 +22,10 @@ from mtag import Logger_to_Logging
 def parse_args():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--main-annot-file', required=True, help = 'file containing the gene list to calculate partition h2')
-    parser.add_argument('--summary-stats-files', required=True,  help = 'list of comma-separated files (already processed with munge_sumstats.py) where to apply partition LDscore, files should end with .sumstats.gz')
-    parser.add_argument('--ldscores-prefix', required=True, help = 'prefix for main annotation output')
-    parser.add_argument('--out', required=True, help = 'path to save the results')
+    parser.add_argument('--main-annot-file', required=True, help = 'File containing the gene list to calculate partition h2')
+    parser.add_argument('--summary-stats-files', required=True,  help = 'List of comma-separated files (already processed with munge_sumstats.py) where to apply partition LDscore, files should end with .sumstats.gz')
+    parser.add_argument('--ldscores-prefix', required=True, help = 'Prefix for main annotation output')
+    parser.add_argument('--out', required=True, help = 'Path to save the results')
 
     parser.add_argument('--baseline', action='store_true', default=True, help = 'condition on baseline annotations?')
 
