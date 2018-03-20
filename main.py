@@ -12,8 +12,8 @@ import os
 from pybedtools import BedTool
 from argparse import Namespace
 
-sys.path.insert(0, '/home/ldsc-master/')
-sys.path.insert(0, '/home/mtag-master/')
+sys.path.insert(0, '/home/ldsc/ldsc-master/')
+sys.path.insert(0, '/home/mtag/mtag-master/')
 
 import ldscore.ldscore as ldsc
 import ldscore.sumstats as sumst
@@ -116,7 +116,7 @@ def prepare_annotations(args,gene_list,outldscore,plink_panel):
     for chrom in range(1, 23):
 
         logging.debug('Running genesets_to_ldscores.py for chr ' + str(chrom) )
-        subprocess.call(['/home/genesets_to_ldscores.py',
+        subprocess.call(['/home/sc_enrichement/genesets_to_ldscores.py',
                         '--geneset-file',gene_list,
                         '--gene-annot',"/home/GENENAME_gene_annot.txt",
                         '--bfile-chr',plink_panel,
@@ -126,7 +126,7 @@ def prepare_annotations(args,gene_list,outldscore,plink_panel):
                         '--chrom', str(chrom)])
 
         logging.debug('Running ldsc.py for chr ' + str(chrom) )
-        subprocess.call(['/home/ldscore/ldsc-master/ldsc.py',
+        subprocess.call(['/home/ldsc/ldsc-master/ldsc.py',
                         '--l2',
                         '--bfile',plink_panel + str(chrom),
                         '--ld-wind-cm', "1",
