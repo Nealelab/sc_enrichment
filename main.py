@@ -12,7 +12,7 @@ import os
 from pybedtools import BedTool
 from argparse import Namespace
 
-sys.path.insert(0, '/home/ldsc/ldsc-master/')
+sys.path.insert(0, '/home/ldscore/ldsc-master/')
 sys.path.insert(0, '/home/mtag/mtag-master/')
 
 import ldscore.ldscore as ldsc
