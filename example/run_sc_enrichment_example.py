@@ -12,6 +12,9 @@ OUT = os.environ['OUT']
 
 print(glob.glob('/home/sc_enrichement/example/*'))
 
+
+subprocess.call(['chmod','+x','/home/sc_enrichement/main.py'])
+
 subprocess.call(['/home/sc_enrichement/main.py',
                     '--main-annot-file',INPUT_GENELIST,
                     '--summary-stats-files',INPUT_SUMSTAT,
