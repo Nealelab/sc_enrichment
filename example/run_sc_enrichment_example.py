@@ -9,17 +9,11 @@ INPUT_SUMSTAT = os.environ['INPUT_SUMSTAT']
 PREFIX = os.environ['PREFIX']
 OUT = os.environ['OUT']
 
-print(type(PREFIX))
-print(type(OUT))
-
 subprocess.call(['/home/sc_enrichement/main.py',
                     '--main-annot-file',INPUT_GENELIST,
                     '--summary-stats-files',INPUT_SUMSTAT,
                     '--ldscores-prefix',PREFIX,
                     '--out',OUT])
-
-
-
 
 
 # INPUT_GENELIST = "gs://ldscores/example/example.geneset"
