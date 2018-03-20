@@ -16,7 +16,10 @@ This fields are mandatories:
 --env OUT - Path to save the results
 ```
 
-3. Run `dsub` command, similar to this:
+3. Install `dsub` if you have not done yet
+```pip install dsub```
+
+4. Run `dsub` command, similar to this:
 
 ```
 dsub \
@@ -30,3 +33,5 @@ dsub \
 	--tasks example/submit_list_example.tsv \
 	--script run_sc_enrichment.py
 ```
+
+sometime `dsub` does not recognize the google cloud credential, then you have to `export GOOGLE_APPLICATION_CREDENTIALS="your_google_cloud_service_account_key_file.json"`
