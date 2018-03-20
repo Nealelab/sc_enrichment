@@ -91,7 +91,11 @@ def download_files(args,ss_list):
             subprocess.call(['gsutil','-m','cp','-r',k,"/home/cond_ldscores/"])
 
     if args.condition_annot_file:
+        logging.info('Downloading files containing conditional annotations')
         subprocess.call(['mkdir','/home/outcondld'])
+        cond_file_list = args.condition_annot_file.split(',')
+        for k in cond_file_list:
+            subprocess.call(['gsutil','-m','cp','-r',k,"/home/outcondld/"])
     
     # Dowload SNP-list for generating LD-scores
     logging.info('Downloading SNP list for LDscore')
@@ -311,6 +315,8 @@ if __name__ == "__main__":
             ld_cond_panel = ','.join(ld_cond_panels_t + [ld_ref_panel])
          if args.condition_annot_file:
             ld_cond_panel = ','.join(ld_cond_panels_file_t + [ld_ref_panel])
+         if args.condition_annot_file and args.condition_annot_ldscores:
+            ld_cond_panel = ','.join(ld_cond_panels_t + ld_cond_panels_file_t + [ld_ref_panel])
 
     # Partitioning heritability
     outfiles_list = []
