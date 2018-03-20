@@ -1,0 +1,2 @@
+--env INPUT_SUMSTAT	--env INPUT_GENELIST	--env COND_ANNOT	--env PREFIX	--env OUTLDSCORE	--env OUT
+gs://ldscores/example/asd_summary_stats.sumstats.gz,gs://ldscores/example/scz_summary_stats.sumstats.gz	gs://ldscores/example/example.geneset	gs://ldscores/example/example_cond.geneset,gs://ldscores/example/example_cond2.geneset		example	gs://ldscores/example/outld/	gs://ldscores/example/

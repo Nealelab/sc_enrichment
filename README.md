@@ -7,8 +7,8 @@ docker build --no-cache -t gcr.io/ukbb-gay-was/ldscore .
 gcloud docker -- push gcr.io/ukbb-gay-was/ldscore
 ```
 
-2. Prepare a tab-separated file containing the inputs for the `dsub` command. See an example in the `/example/` folder.
-This fields are mandatories:
+2. Prepare a tab-separated file containing the inputs for the `dsub` command. See an example in `/example/submit_list_example.tsv`.
+These fields are mandatories:
 ```
 --env INPUT_SUMSTAT - File containing the gene list to calculate partition h2
 --env INPUT_GENELIST - List of comma-separated files (already processed with munge_sumstats.py) where to apply partition LDscore, files should end with .sumstats.gz
@@ -16,10 +16,34 @@ This fields are mandatories:
 --env OUT - Path to save the results
 ```
 
-3. Install `dsub` if you have not done yet
+3. Build a `.py` command to run the analysis. One example is provided in `example/run_sc_enrichment_example.py`
+
+The code should look something like this:
+a) Assign the enviromental variables defined in the file created in step 2.
+
+```
+INPUT_GENELIST = os.environ['INPUT_GENELIST']
+INPUT_SUMSTAT = os.environ['INPUT_SUMSTAT']
+PREFIX = os.environ['PREFIX']
+OUT = os.environ['OUT']
+```
+b) Call the `main.py` script, for example:
+```
+subprocess.call(['/home/sc_enrichement/sc_enrichement-master/main.py',
+                    '--main-annot-file',INPUT_GENELIST,
+                    '--summary-stats-files',INPUT_SUMSTAT,
+                    '--ldscores-prefix',PREFIX,
+                    '--out',OUT,
+                    '--verbose'])
+```
+
+There are many other options that can be used. For another example check `example/run_sc_enrichment_example_advanced.py` for a script with more options.
+
+
+4. Install `dsub` if you have not done yet
 ```pip install dsub```
 
-4. Run `dsub` command, similar to this:
+5. Run `dsub` command, similar to this:
 
 ```
 dsub \
