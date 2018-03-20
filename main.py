@@ -325,11 +325,11 @@ if __name__ == "__main__":
     write_report(report_name=args.ldscores_prefix + '.report',sum_stat='\t'.join(ss_list),base_panel=ld_ref_panel, cond_panels=ld_cond_panel, outfile='\t'.join(outfiles_list))
 
     if args.export_ldscore_path:
-        logging.info('LDscores copied to ' + args.export_ldscore_path)
+        logging.info('LDscores copied to ' + str(args.export_ldscore_path))
         subprocess.call(['gsutil','-m','cp','/home/outld/*',args.export_ldscore_path])
     
     # Writing the results
-    logging.info('Results copied to ' + args.export_ldscore_path)
+    logging.info('Results copied to ' + str(args.export_ldscore_path))
     subprocess.call(['gsutil','cp','/home/*.ldsc.cell_type_results.txt',args.out])
     subprocess.call(['gsutil','cp',args.ldscores_prefix + '.report',args.out])
 
