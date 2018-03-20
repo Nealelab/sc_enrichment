@@ -131,7 +131,7 @@ def prepare_annotations(args,gene_list,outldscore,plink_panel):
                         '--chrom', str(chrom)])
 
         logging.debug('Running ldsc.py for chr ' + str(chrom) )
-        subprocess.call(['/home/ldsc/ldsc-master/ldsc.py',
+        subprocess.call(['/home/ldscore/ldsc-master/ldsc.py',
                         '--l2',
                         '--bfile',plink_panel + str(chrom),
                         '--ld-wind-cm', "1",
