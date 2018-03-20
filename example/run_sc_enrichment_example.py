@@ -2,12 +2,15 @@
 
 import subprocess
 import os
+import glob
 
 ## Inputs ##
 INPUT_GENELIST = os.environ['INPUT_GENELIST']
 INPUT_SUMSTAT = os.environ['INPUT_SUMSTAT']
 PREFIX = os.environ['PREFIX']
 OUT = os.environ['OUT']
+
+print(glob.glob('/home/sc_enrichement/example/*'))
 
 subprocess.call(['/home/sc_enrichement/main.py',
                     '--main-annot-file',INPUT_GENELIST,

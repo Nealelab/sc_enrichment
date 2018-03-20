@@ -12,8 +12,8 @@ import os
 from pybedtools import BedTool
 from argparse import Namespace
 
-sys.path.insert(0, '/home/ldsc/ldsc-master/')
-sys.path.insert(0, '/home/mtag/mtag-master/')
+sys.path.insert(0, '/home/ldsc/')
+sys.path.insert(0, '/home/mtag/')
 
 import ldscore.ldscore as ldsc
 import ldscore.sumstats as sumst
@@ -126,7 +126,7 @@ def prepare_annotations(args,gene_list,outldscore,plink_panel):
                         '--chrom', str(chrom)])
 
         logging.debug('Running ldsc.py for chr ' + str(chrom) )
-        subprocess.call(['/home/ldsc/ldsc-master/ldsc.py',
+        subprocess.call(['/home/ldsc/ldsc.py',
                         '--l2',
                         '--bfile',plink_panel + str(chrom),
                         '--ld-wind-cm', "1",

@@ -10,7 +10,7 @@ gcloud docker -- push gcr.io/ukbb-gay-was/ldscore
 2. Prepare a tab-separated file containing the inputs for the `dsub` command. See an example in the `/example/` folder.
 This fields are mandatories:
 ```
---input INPUT_SUMSTAT - File containing the gene list to calculate partition h2
+--env INPUT_SUMSTAT - File containing the gene list to calculate partition h2
 --env INPUT_GENELIST - List of comma-separated files (already processed with munge_sumstats.py) where to apply partition LDscore, files should end with .sumstats.gz
 --env PREFIX - Prefix for main annotation output
 --env OUT - Path to save the results
