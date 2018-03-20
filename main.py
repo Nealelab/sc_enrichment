@@ -68,6 +68,7 @@ def download_files(args,ss_list):
     subprocess.call(['mkdir','/home/ss'])
     subprocess.call(['mkdir','/home/outld'])
     subprocess.call(['mkdir','/home/inld'])
+    subprocess.call(['mkdir','/home/tmp'])
 
     # Download plink files
     logging.info('Downloading 1000 genomes plink files')
@@ -120,7 +121,7 @@ def prepare_annotations(args,gene_list,outldscore,plink_panel):
                         '--geneset-file',gene_list,
                         '--gene-annot',"/home/GENENAME_gene_annot.txt",
                         '--bfile-chr',plink_panel,
-                        '--ldscores_prefix','/tmp/temp_dscore',
+                        '--ldscores_prefix','/home/tmp/temp_dscore',
                         '--windowsize',str(args.windowsize),
                         '--gene-col-name', str(args.gene_col_name),
                         '--chrom', str(chrom)])
@@ -130,7 +131,7 @@ def prepare_annotations(args,gene_list,outldscore,plink_panel):
                         '--l2',
                         '--bfile',plink_panel + str(chrom),
                         '--ld-wind-cm', "1",
-                        '--annot','/tmp/temp_dscore.' + str(chrom) + '.annot.gz',
+                        '--annot','/home/tmp/temp_dscore.' + str(chrom) + '.annot.gz',
                         '--thin-annot',
                         '--out', outldscore + "." + str(chrom),
                         '--print-snps',"/home/list.txt"])
