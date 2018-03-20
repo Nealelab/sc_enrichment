@@ -159,7 +159,7 @@ def prepare_params_file(args,params_file='/home/params.ldcts'):
 
     with open(params_file, 'a') as file:
         logging.debug('Save parameter file with this content: ' + '/home/outld/' + args.ldscores_prefix + '.')
-        file.write("/home/outld/" + args.ldscores_prefix + '.\n')
+        file.write(args.ldscores_prefix + "\t" +"/home/outld/" + args.ldscores_prefix + '.\n')
 
 
 
