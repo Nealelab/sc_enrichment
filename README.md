@@ -31,7 +31,7 @@ dsub \
 	--disk-size 200 \
 	--image gcr.io/ukbb-gay-was/ldscore \
 	--tasks example/submit_list_example.tsv \
-	--script run_sc_enrichment.py
+	--script example/run_sc_enrichment_example.py
 ```
 
 sometime `dsub` does not recognize the google cloud credential, then you have to `export GOOGLE_APPLICATION_CREDENTIALS="your_google_cloud_service_account_key_file.json"`

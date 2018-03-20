@@ -252,7 +252,7 @@ if __name__ == "__main__":
     logging.debug('plink_panel: ' + plink_panel)
 
     # Create annotations for main outcome 
-    prepare_annotations(args.gene_list=args.main_annot_file, outldscore='/home/outld/' + args.ldscores_prefix, plink_panel=plink_panel)
+    prepare_annotations(args,gene_list=args.main_annot_file, outldscore='/home/outld/' + args.ldscores_prefix, plink_panel=plink_panel)
 
     # If provided, prepare annotation for conditioning gene lists
     if args.condition_annot_file:
