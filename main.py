@@ -27,7 +27,7 @@ def parse_args():
     parser.add_argument('--ldscores-prefix', required=True, help = 'Prefix for main annotation output')
     parser.add_argument('--out', required=True, help = 'Path to save the results')
 
-    parser.add_argument('--no_baseline', action='store_false', default=True, help = 'condition on baseline annotations?')
+    parser.add_argument('--no_baseline', action='store_false', default=True, help = 'Do not condition on baseline annotations')
 
     parser.add_argument('--condition-annot-file', help = 'file(s) containing the gene list for conditioning')
     parser.add_argument('--condition-annot-ldscores', help = 'comma-separated list of folder locations of ldscores to be used for conditioning')
@@ -79,7 +79,7 @@ def download_files(args,ss_list):
     subprocess.call(['gsutil','-m','cp','-r',args.tkg_weights_folder,"/home/inld/"])
 
     # Download baseline
-    if args.baseline:
+    if not args.no_baseline:
         logging.info('Downloading baseline annotations')
         subprocess.call(['gsutil','-m','cp','-r',args.baseline_ldscores_folder,"/home/inld/"])
 
@@ -278,7 +278,7 @@ if __name__ == "__main__":
     logging.debug('ld_w_panel: ' + ld_w_panel)
 
     # LDscore baseline panel
-    if args.baseline:
+    if not args.no_baseline:
         name_ldref = os.path.split(args.baseline_ldscores_folder)
         name = glob.glob('/home/inld/' + name_ldref[-1] + "/*")
         ld_ref_panel = commonprefix(name)
@@ -305,7 +305,7 @@ if __name__ == "__main__":
     list_sumstats_file=glob.glob("/home/ss/*")
 
     # Panels for conditioning
-    if args.baseline:
+    if not args.no_baseline:
          ld_cond_panel = ld_ref_panel
          if args.condition_annot_ldscores:
             ld_cond_panel = ','.join(ld_cond_panels_t + [ld_ref_panel])
