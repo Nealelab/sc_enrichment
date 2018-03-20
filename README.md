@@ -20,25 +20,25 @@ These fields are mandatories:
 
 The code should look something like this:
 
-	a) Assign the enviromental variables defined in the file created in step 2.
+  a) Assign the enviromental variables defined in the file created in step 2.
 
-	```
-	INPUT_GENELIST = os.environ['INPUT_GENELIST']
-	INPUT_SUMSTAT = os.environ['INPUT_SUMSTAT']
-	PREFIX = os.environ['PREFIX']
-	OUT = os.environ['OUT']
-	```
-	b) Call the `main.py` script, for example:
-	```
-	subprocess.call(['/home/sc_enrichement/sc_enrichement-master/main.py',
-	                    '--main-annot-file',INPUT_GENELIST,
-	                    '--summary-stats-files',INPUT_SUMSTAT,
-	                    '--ldscores-prefix',PREFIX,
-	                    '--out',OUT,
-	                    '--verbose'])
-	```
+  ```
+  INPUT_GENELIST = os.environ['INPUT_GENELIST']
+  INPUT_SUMSTAT = os.environ['INPUT_SUMSTAT']
+  PREFIX = os.environ['PREFIX']
+  OUT = os.environ['OUT']
+  ```
+  b) Call the `main.py` script, for example:
+  ```
+  subprocess.call(['/home/sc_enrichement/sc_enrichement-master/main.py',
+                    '--main-annot-file',INPUT_GENELIST,
+                    '--summary-stats-files',INPUT_SUMSTAT,
+                    '--ldscores-prefix',PREFIX,
+                    '--out',OUT,
+                    '--verbose'])
+  ```
 
-	There are many other options that can be used. For another example check `example/run_sc_enrichment_example_advanced.py`.
+There are many other options that can be used. For another example check `example/run_sc_enrichment_example_advanced.py`.
 
 
 4. Install `dsub` if you have not done yet
