@@ -19,5 +19,5 @@ subprocess.call(['/home/sc_enrichement/sc_enrichement-master/main.py',
                     '--condition-annot-file',COND_ANNOT,
                     '--export_ldscore_path',OUTLDSCORE,
                     '--windowsize','10000',
-                    '--baseline','False',
+                    '--no_baseline',
                     '--verbose'])

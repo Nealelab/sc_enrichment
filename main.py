@@ -27,7 +27,7 @@ def parse_args():
     parser.add_argument('--ldscores-prefix', required=True, help = 'Prefix for main annotation output')
     parser.add_argument('--out', required=True, help = 'Path to save the results')
 
-    parser.add_argument('--baseline', action='store_true', default=True, help = 'condition on baseline annotations?')
+    parser.add_argument('--no_baseline', action='store_false', default=True, help = 'condition on baseline annotations?')
 
     parser.add_argument('--condition-annot-file', help = 'file(s) containing the gene list for conditioning')
     parser.add_argument('--condition-annot-ldscores', help = 'comma-separated list of folder locations of ldscores to be used for conditioning')
