@@ -1,2 +1,2 @@
---input INPUT_SUMSTAT	--env INPUT_GENELIST	--env PREFIX	--env OUT
+--env INPUT_SUMSTAT	--env INPUT_GENELIST	--env PREFIX	--env OUT
 gs://ldscores/example/asd_summary_stats.sumstats.gz,gs://ldscores/example/scz_summary_stats.sumstats.gz	gs://ldscores/example/example.geneset	example	gs://ldscores/example/
