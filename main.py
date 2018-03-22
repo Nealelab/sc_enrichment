@@ -343,7 +343,7 @@ if __name__ == "__main__":
         ldsc_results = ldsc_h2(infile=sumstats, phname=phname, params_file='/home/params.ldcts',ld_ref_panel=ld_cond_panel, ld_w_panel=ld_w_panel, outfile=outfile)
 
     # Writing report
-    write_report(report_name=prefixa_list.join("_") + '.report',sum_stat='\t'.join(ss_list),main_panel='\t'.join(main_file_list), cond_panels=ld_cond_panel, outfile='\t'.join(outfiles_list))
+    write_report(report_name="_".join(prefixa_list) + '.report',sum_stat='\t'.join(ss_list),main_panel='\t'.join(main_file_list), cond_panels=ld_cond_panel, outfile='\t'.join(outfiles_list))
 
     if args.export_ldscore_path:
         logging.info('LDscores copied to ' + str(args.export_ldscore_path))
@@ -352,7 +352,7 @@ if __name__ == "__main__":
     # Writing the results
     logging.info('Results copied to ' + str(args.export_ldscore_path))
     subprocess.call(['gsutil','cp','/home/*.ldsc.cell_type_results.txt',os.path.join(args.out,"")])
-    subprocess.call(['gsutil','cp',prefixa_list.join("_") + '.report',os.path.join(args.out,"")])
+    subprocess.call(['gsutil','cp',"_".join(prefixa_list) + '.report',os.path.join(args.out,"")])
 
 
     logging.info('FINITO!')
