@@ -9,8 +9,11 @@ import glob
 import sys
 import logging
 import os
+import random
+import string
 from pybedtools import BedTool
 from argparse import Namespace
+
 
 sys.path.insert(0, '/home/ldscore/ldsc-master/')
 sys.path.insert(0, '/home/mtag/mtag-master/')
@@ -60,6 +63,11 @@ def parse_args():
     return args
 
 
+def random_string(length):
+    """ Generate a random string """
+    return ''.join(random.choice(string.ascii_letters) for m in range(length))
+
+
 def download_files(args,main_file_list,ss_list):
 
     """Download files for downstream analyses"""
@@ -73,11 +81,11 @@ def download_files(args,main_file_list,ss_list):
 
     # Download plink files
     logging.info('Downloading 1000 genomes plink files')
-    subprocess.call(['gsutil','-m','cp','-r',args.tkg_plink_folder,'/home/'])
+    #subprocess.call(['gsutil','-m','cp','-r',args.tkg_plink_folder,'/home/'])
 
     # Downlad 1000 genome weights
     logging.info('Downloading 1000 genomes weights for ldscore')
-    subprocess.call(['gsutil','-m','cp','-r',args.tkg_weights_folder,"/home/inld/"])
+    #subprocess.call(['gsutil','-m','cp','-r',args.tkg_weights_folder,"/home/inld/"])
 
     # Download baseline
     if not args.no_baseline:
@@ -89,14 +97,16 @@ def download_files(args,main_file_list,ss_list):
         subprocess.call(['mkdir','/home/cond_ldscores'])
         cond_ld_list = args.condition_annot_ldscores.split(',')
         for k in cond_ld_list:
-            subprocess.call(['gsutil','-m','cp','-r',k,"/home/cond_ldscores/"])
+            ts = os.path.join(random_string(7),"")
+            subprocess.call(['mkdir','/home/cond_ldscores/' + ts])
+            subprocess.call(['gsutil','-m','cp','-r',os.path.join(k, "") + '*' ,'/home/cond_ldscores/' + ts])
 
     if args.condition_annot_file:
         logging.info('Downloading file(s) containing conditional annotations')
         subprocess.call(['mkdir','/home/outcondld'])
         cond_file_list = args.condition_annot_file.split(',')
         for k in cond_file_list:
-            subprocess.call(['gsutil','cp',k,"/home/outcondld/"])
+            subprocess.call(['gsutil','cp',k,"/home/"])
     
     # Dowload SNP-list for generating LD-scores
     logging.info('Downloading SNP list for LDscore')
@@ -107,15 +117,14 @@ def download_files(args,main_file_list,ss_list):
     subprocess.call(['gsutil','cp',args.gene_anno_pos_file,'/home/GENENAME_gene_annot.txt'])
 
     # Download main annotation file
-    logging.info('Downloading main annotation file(s)')
+    logging.info('Downloading main annotation file(s):' + ':'.join(main_file_list))
     for k in main_file_list:
-        subprocess.call(['gsutil','cp',k,"/home/"])
+        subprocess.call(['gsutil','cp',k,'/home/'])
 
     # Download summary stats
-    logging.info('Downloading summary statistic(s)')
+    logging.info('Downloading summary statistic(s):' + ':'.join(ss_list))
     for ss in ss_list:
         subprocess.call(['gsutil','cp',ss,'/home/ss/'])
-
 
 
 def prepare_annotations(args,gene_list,outldscore,plink_panel):
@@ -126,7 +135,7 @@ def prepare_annotations(args,gene_list,outldscore,plink_panel):
 
     for chrom in range(1, 23):
 
-        logging.debug('Running genesets_to_ldscores.py for chr ' + str(chrom) )
+        logging.debug('Running genesets_to_ldscores.py for chr ' + str(chrom) + ' and geneset-file ' + str(gene_list))
         subprocess.call(['/home/sc_enrichement/sc_enrichement-master/genesets_to_ldscores.py',
                         '--geneset-file',gene_list,
                         '--gene-annot',"/home/GENENAME_gene_annot.txt",
@@ -258,7 +267,7 @@ if __name__ == "__main__":
     ld_cond_panel = "No Conditional Panel"
 
     # Set up the ennviroment
-    download_files(args,ss_list,main_file_list)
+    download_files(args,main_file_list,ss_list)
 
     # 1000 genome files
     name_plink = os.path.split(args.tkg_plink_folder)
@@ -267,17 +276,16 @@ if __name__ == "__main__":
     logging.debug('plink_panel: ' + plink_panel)
 
     # Create annotations for main outcome
-    for index,main_file in enumerate(main_file_list):
-        prepare_annotations(args,gene_list='/home/' + os.path.basename(main_file), outldscore='/home/outld/' + prefixa_list[index], plink_panel=plink_panel)
+    # for index,main_file in enumerate(main_file_list):
+    #    prepare_annotations(args,gene_list='/home/' + os.path.basename(main_file), outldscore='/home/outld/' + prefixa_list[index], plink_panel=plink_panel)
 
-    # If provided, prepare annotation for conditioning gene lists
-    if args.condition_annot_file:
-        cond_list = args.condition_annot_file.split(',')
-        for k in cond_list:
-            k_name = os.path.basename(k)
-            print(k_name)
-            subprocess.call(['mkdir','/home/outcondld/' + k_name])
-            prepare_annotations(args,gene_list=k,outldscore='/home/outcondld/' + k_name + '/' + k_name, plink_panel=plink_panel)
+    # # If provided, prepare annotation for conditioning gene lists
+    # if args.condition_annot_file:
+    #     cond_list = args.condition_annot_file.split(',')
+    #     for k in cond_list:
+    #         k_name = os.path.basename(k)
+    #         subprocess.call(['mkdir','/home/outcondld/' + k_name])
+    #         prepare_annotations(args,gene_list='/home/' + k_name,outldscore='/home/outcondld/' + k_name + '/' + k_name, plink_panel=plink_panel)
 
     # Save parameter file
     prepare_params_file(args,prefixa_list)
@@ -339,11 +347,12 @@ if __name__ == "__main__":
 
     if args.export_ldscore_path:
         logging.info('LDscores copied to ' + str(args.export_ldscore_path))
-        subprocess.call(['gsutil','-m','cp','/home/outld/*',args.export_ldscore_path])
+        subprocess.call(['gsutil','-m','cp','/home/outld/*',os.path.join(args.export_ldscore_path,"")])
     
     # Writing the results
     logging.info('Results copied to ' + str(args.export_ldscore_path))
-    subprocess.call(['gsutil','cp','/home/*.ldsc.cell_type_results.txt',args.out])
-    subprocess.call(['gsutil','cp',args.ldscores_prefix + '.report',args.out])
+    subprocess.call(['gsutil','cp','/home/*.ldsc.cell_type_results.txt',os.path.join(args.out,"")])
+    subprocess.call(['gsutil','cp',prefixa_list.join("_") + '.report',os.path.join(args.out,"")])
+
 
     logging.info('FINITO!')
