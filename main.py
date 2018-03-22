@@ -81,11 +81,11 @@ def download_files(args,main_file_list,ss_list):
 
     # Download plink files
     logging.info('Downloading 1000 genomes plink files')
-    #subprocess.call(['gsutil','-m','cp','-r',args.tkg_plink_folder,'/home/'])
+    subprocess.call(['gsutil','-m','cp','-r',args.tkg_plink_folder,'/home/'])
 
     # Downlad 1000 genome weights
     logging.info('Downloading 1000 genomes weights for ldscore')
-    #subprocess.call(['gsutil','-m','cp','-r',args.tkg_weights_folder,"/home/inld/"])
+    subprocess.call(['gsutil','-m','cp','-r',args.tkg_weights_folder,"/home/inld/"])
 
     # Download baseline
     if not args.no_baseline:
@@ -275,17 +275,17 @@ if __name__ == "__main__":
     plink_panel = commonprefix(name)
     logging.debug('plink_panel: ' + plink_panel)
 
-    # Create annotations for main outcome
-    # for index,main_file in enumerate(main_file_list):
-    #    prepare_annotations(args,gene_list='/home/' + os.path.basename(main_file), outldscore='/home/outld/' + prefixa_list[index], plink_panel=plink_panel)
+    #Create annotations for main outcome
+    for index,main_file in enumerate(main_file_list):
+       prepare_annotations(args,gene_list='/home/' + os.path.basename(main_file), outldscore='/home/outld/' + prefixa_list[index], plink_panel=plink_panel)
 
-    # # If provided, prepare annotation for conditioning gene lists
-    # if args.condition_annot_file:
-    #     cond_list = args.condition_annot_file.split(',')
-    #     for k in cond_list:
-    #         k_name = os.path.basename(k)
-    #         subprocess.call(['mkdir','/home/outcondld/' + k_name])
-    #         prepare_annotations(args,gene_list='/home/' + k_name,outldscore='/home/outcondld/' + k_name + '/' + k_name, plink_panel=plink_panel)
+    # If provided, prepare annotation for conditioning gene lists
+    if args.condition_annot_file:
+        cond_list = args.condition_annot_file.split(',')
+        for k in cond_list:
+            k_name = os.path.basename(k)
+            subprocess.call(['mkdir','/home/outcondld/' + k_name])
+            prepare_annotations(args,gene_list='/home/' + k_name,outldscore='/home/outcondld/' + k_name + '/' + k_name, plink_panel=plink_panel)
 
     # Save parameter file
     prepare_params_file(args,prefixa_list)
