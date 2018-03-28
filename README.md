@@ -1,10 +1,12 @@
 # sc_enrichement
 Cloud-based single-cell enrichment analysis
 
-1. Build a docker, this has already been done and available at `gcr.io/ukbb-gay-was/ldscore`
+1. Build a docker, this has already been done and available at `gcr.io/ldscore-data/ldscore`
 ```
 docker build --no-cache -t gcr.io/ldscore-data/ldscore .
 gcloud docker -- push gcr.io/ldscore-data/ldscore
+# We made it publically available
+gsutil iam ch allUsers:objectViewer gs://artifacts.ldscore-data.appspot.com
 ```
 
 2. Prepare a tab-separated file containing the inputs for the `dsub` command. See an example in `/example/submit_list_example.tsv`.

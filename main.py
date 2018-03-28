@@ -40,11 +40,11 @@ def parse_args():
     parser.add_argument('--gene-col-name', default="GENENAME", help = 'Column name for the files containing a gene list')
     parser.add_argument('--windowsize', type=int, default=100000, help = 'size of the window around the gene')
 
-    parser.add_argument('--snp-list-file', default="gs://ldscores/list.txt", help = 'Location of the file containing the list of SNPs to use for the generation of the LD-scores')
-    parser.add_argument('--gene-anno-pos-file', default="gs://ldscores/GENENAME_gene_annot.txt", help = 'Location of the file containing start and end position for each gene')
-    parser.add_argument('--tkg-weights-folder', default="gs://constraint_ukbb/1000G_Phase3_weights_hm3_no_MHC", help = 'Folder containing the chr-specific files with 1000 genomes weights for running LDscore regression')
-    parser.add_argument('--tkg-plink-folder', default="gs://ldscores/plink_files", help = 'Folder containing the chr-specific plink files from 1000 genomes to be used to create LDscores')
-    parser.add_argument('--baseline-ldscores-folder', default="gs://constraint_ukbb/baselineLD_v1.1", help = 'Folder containing the baseline chr-specific LDscores to be used for conditioning')
+    parser.add_argument('--snp-list-file', default="gs://singlecellldscore/list.txt", help = 'Location of the file containing the list of SNPs to use for the generation of the LD-scores')
+    parser.add_argument('--gene-anno-pos-file', default="gs://singlecellldscore/GENENAME_gene_annot.txt", help = 'Location of the file containing start and end position for each gene')
+    parser.add_argument('--tkg-weights-folder', default="gs://singlecellldscore/1000G_Phase3_weights_hm3_no_MHC", help = 'Folder containing the chr-specific files with 1000 genomes weights for running LDscore regression')
+    parser.add_argument('--tkg-plink-folder', default="gs://singlecellldscore/plink_files", help = 'Folder containing the chr-specific plink files from 1000 genomes to be used to create LDscores')
+    parser.add_argument('--baseline-ldscores-folder', default="gs://singlecellldscore/baselineLD_v1.1", help = 'Folder containing the baseline chr-specific LDscores to be used for conditioning')
 
     parser.add_argument("--verbose", help="increase output verbosity",
                     action="store_true")
