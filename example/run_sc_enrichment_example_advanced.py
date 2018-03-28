@@ -23,12 +23,3 @@ subprocess.call(['/home/sc_enrichement/sc_enrichement-master/main.py',
                     '--windowsize','10000',
                     '--no_baseline',
                     '--verbose'])
-
-
-# INPUT_GENELIST="gs://ldscores/example/example.geneset,gs://ldscores/example/example2.geneset"
-# INPUT_SUMSTAT="gs://ldscores/example/asd_summary_stats.sumstats.gz,gs://ldscores/example/scz_summary_stats.sumstats.gz"
-# PREFIX="example,example2"
-# OUT="gs://ldscores/example/"
-# COND_ANNOT_FILE="gs://ldscores/example/example_cond.geneset,gs://ldscores/example/example_cond2.geneset"
-# COND_ANNOT_LDSCORE="gs://ldscores/example/anno_ldscore/"
-# OUTLDSCORE="gs://ldscores/example/outld/"

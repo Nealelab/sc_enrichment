@@ -3,8 +3,8 @@ Cloud-based single-cell enrichment analysis
 
 1. Build a docker, this has already been done and available at `gcr.io/ukbb-gay-was/ldscore`
 ```
-docker build --no-cache -t gcr.io/ukbb-gay-was/ldscore .
-gcloud docker -- push gcr.io/ukbb-gay-was/ldscore
+docker build --no-cache -t gcr.io/ldscore-data/ldscore .
+gcloud docker -- push gcr.io/ldscore-data/ldscore
 ```
 
 2. Prepare a tab-separated file containing the inputs for the `dsub` command. See an example in `/example/submit_list_example.tsv`.
@@ -49,12 +49,12 @@ There are many other options that can be used. For another example check `exampl
 ```
 dsub \
 	--provider google \
-	--project ukbb-gay-was \
+	--project ldscore-data \
 	--zones "us-central1-*" \
 	--min-ram 4 \
-	--logging gs://ldscores/example/log/ \
+	--logging gs://singlecellldscore/example/log/ \
 	--disk-size 200 \
-	--image gcr.io/ukbb-gay-was/ldscore \
+	--image gcr.io/ldscore-data/ldscore \
 	--tasks example/submit_list_example.tsv \
 	--script example/run_sc_enrichment_example.py
 ```

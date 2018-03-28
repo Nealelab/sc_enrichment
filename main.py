@@ -25,7 +25,7 @@ from mtag import Logger_to_Logging
 def parse_args():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--main-annot-file', required=True, help = 'File(s) containing the gene list to calculate partition h2. If multiple files are used, need a comma-separated list.')
+    parser.add_argument('--main-annot-file', required=True, help = 'File(s) containing the gene list to calculate partition h2 or LDscores(s). If multiple files or LDscores are used, need a comma-separated list. If file(s) are detected, LDscores are generated otherwise LDscore(s) are directly used.')
     parser.add_argument('--summary-stats-files', required=True,  help = 'File(s) (already processed with munge_sumstats.py) where to apply partition LDscore, files should end with .sumstats.gz. If multiple files are used, need a comma-separated list.')
     parser.add_argument('--ldscores-prefix', required=True, help = 'Prefix(a) for main annotation output. If multiple prefixa are used, need a comma-separated list. Need to have as many prefixa as files specified in --main-annot-file.')
     parser.add_argument('--out', required=True, help = 'Path to save the results')
@@ -68,7 +68,29 @@ def random_string(length):
     return ''.join(random.choice(string.ascii_letters) for m in range(length))
 
 
-def download_files(args,main_file_list,ss_list):
+
+def recognize_ldscore_genelist(inputs):
+    """ Recognize if the input file is a set of LDscores or if it is a genelist """
+
+    results=[]
+    for input in inputs:
+        try:
+            out = filter(bool, subprocess.check_output(['gsutil','ls',os.path.join(input, "")]).split("\n"))
+        except subprocess.CalledProcessError:
+            print("Some LDscores or genesets file(s) you specify do not exists")
+        if len(out) > 1:
+            results.append(True)
+        elif len(out) == 1:
+            results.append(False)
+    if results.count(results[0]) == len(results):
+        return(results[0])
+    else:
+        sys.exit("Not all files are of the same type, check you didn't mixed up LDscores with genesets")
+
+
+
+
+def download_files(args,main_file_list,ss_list,prefixa_list,is_ldscore):
 
     """Download files for downstream analyses"""
 
@@ -79,19 +101,34 @@ def download_files(args,main_file_list,ss_list):
     subprocess.call(['mkdir','/home/inld'])
     subprocess.call(['mkdir','/home/tmp'])
 
-    # Download plink files
-    logging.info('Downloading 1000 genomes plink files')
-    subprocess.call(['gsutil','-m','cp','-r',args.tkg_plink_folder,'/home/'])
+    # # Download plink files
+    # logging.info('Downloading 1000 genomes plink files')
+    # subprocess.call(['gsutil','-m','cp','-r',args.tkg_plink_folder,'/home/'])
 
-    # Downlad 1000 genome weights
-    logging.info('Downloading 1000 genomes weights for ldscore')
-    subprocess.call(['gsutil','-m','cp','-r',args.tkg_weights_folder,"/home/inld/"])
+    # # Downlad 1000 genome weights
+    # logging.info('Downloading 1000 genomes weights for ldscore')
+    # subprocess.call(['gsutil','-m','cp','-r',args.tkg_weights_folder,"/home/inld/"])
 
-    # Download baseline
-    if not args.no_baseline:
-        logging.info('Downloading baseline annotation')
-        subprocess.call(['gsutil','-m','cp','-r',args.baseline_ldscores_folder,"/home/inld/"])
+    # # Download baseline
+    # if not args.no_baseline:
+    #     logging.info('Downloading baseline annotation')
+    #     subprocess.call(['gsutil','-m','cp','-r',args.baseline_ldscores_folder,"/home/inld/"])
 
+
+    # Download main annotations
+    if is_ldscore:   
+        logging.info('Downloading main annotation LDscores(s):' + ':'.join(main_file_list))
+        subprocess.call(['mkdir','/home/outld'])
+        for index,k in enumerate(main_file_list):
+            ts = prefixa_list[index]
+            subprocess.call(['mkdir','/home/outld/' + ts])
+            subprocess.call(['gsutil','-m','cp','-r',os.path.join(k, "") + '*' ,'/home/outld/' + ts])
+    else:
+        logging.info('Downloading main annotation file(s):' + ':'.join(main_file_list))
+        for k in main_file_list:
+            subprocess.call(['gsutil','cp',k,'/home/'])
+
+    # Download conditional annotations
     if args.condition_annot_ldscores:
         logging.info('Downloading conditional ldscores annotation(s)')
         subprocess.call(['mkdir','/home/cond_ldscores'])
@@ -117,9 +154,7 @@ def download_files(args,main_file_list,ss_list):
     subprocess.call(['gsutil','cp',args.gene_anno_pos_file,'/home/GENENAME_gene_annot.txt'])
 
     # Download main annotation file
-    logging.info('Downloading main annotation file(s):' + ':'.join(main_file_list))
-    for k in main_file_list:
-        subprocess.call(['gsutil','cp',k,'/home/'])
+
 
     # Download summary stats
     logging.info('Downloading summary statistic(s):' + ':'.join(ss_list))
@@ -260,14 +295,16 @@ if __name__ == "__main__":
     prefixa_list = args.ldscores_prefix.split(',')
     ss_list = args.summary_stats_files.split(',')
 
-    logging.info('The main annotation file(s) downloaded: ' + ':'.join(main_file_list))
-    logging.info('The summary statistic(s) downloaded: ' + ':'.join(ss_list))
+    is_ldscore = recognize_ldscore_genelist(main_file_list)
+
+    logging.info('The main annotation file(s) or LDscore(s) to Download: ' + ':'.join(main_file_list))
+    logging.info('The summary statistic(s) to download: ' + ':'.join(ss_list))
 
     ld_ref_panel = "No Baseline Panel"
     ld_cond_panel = "No Conditional Panel"
 
     # Set up the ennviroment
-    download_files(args,main_file_list,ss_list)
+    download_files(args,main_file_list,ss_list,prefixa_list,is_ldscore)
 
     # 1000 genome files
     name_plink = os.path.split(args.tkg_plink_folder)
@@ -276,8 +313,9 @@ if __name__ == "__main__":
     logging.debug('plink_panel: ' + plink_panel)
 
     #Create annotations for main outcome
-    for index,main_file in enumerate(main_file_list):
-       prepare_annotations(args,gene_list='/home/' + os.path.basename(main_file), outldscore='/home/outld/' + prefixa_list[index], plink_panel=plink_panel)
+    if not is_ldscore:
+        for index,main_file in enumerate(main_file_list):
+           prepare_annotations(args,gene_list='/home/' + os.path.basename(main_file), outldscore='/home/outld/' + prefixa_list[index], plink_panel=plink_panel)
 
     # If provided, prepare annotation for conditioning gene lists
     if args.condition_annot_file:
