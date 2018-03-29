@@ -101,18 +101,18 @@ def download_files(args,main_file_list,ss_list,prefixa_list,is_ldscore):
     subprocess.call(['mkdir','/home/inld'])
     subprocess.call(['mkdir','/home/tmp'])
 
-    # # Download plink files
-    # logging.info('Downloading 1000 genomes plink files')
-    # subprocess.call(['gsutil','-m','cp','-r',args.tkg_plink_folder,'/home/'])
+    # Download plink files
+    logging.info('Downloading 1000 genomes plink files')
+    subprocess.call(['gsutil','-m','cp','-r',args.tkg_plink_folder,'/home/'])
 
-    # # Downlad 1000 genome weights
-    # logging.info('Downloading 1000 genomes weights for ldscore')
-    # subprocess.call(['gsutil','-m','cp','-r',args.tkg_weights_folder,"/home/inld/"])
+    # Downlad 1000 genome weights
+    logging.info('Downloading 1000 genomes weights for ldscore')
+    subprocess.call(['gsutil','-m','cp','-r',args.tkg_weights_folder,"/home/inld/"])
 
-    # # Download baseline
-    # if not args.no_baseline:
-    #     logging.info('Downloading baseline annotation')
-    #     subprocess.call(['gsutil','-m','cp','-r',args.baseline_ldscores_folder,"/home/inld/"])
+    # Download baseline
+    if not args.no_baseline:
+        logging.info('Downloading baseline annotation')
+        subprocess.call(['gsutil','-m','cp','-r',args.baseline_ldscores_folder,"/home/inld/"])
 
 
     # Download main annotations
@@ -152,8 +152,6 @@ def download_files(args,main_file_list,ss_list,prefixa_list,is_ldscore):
     # Download file mapping SNPs to positions
     logging.info('Downloading file to map genes to positions')
     subprocess.call(['gsutil','cp',args.gene_anno_pos_file,'/home/GENENAME_gene_annot.txt'])
-
-    # Download main annotation file
 
 
     # Download summary stats
