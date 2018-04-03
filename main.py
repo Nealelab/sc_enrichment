@@ -403,7 +403,7 @@ if __name__ == "__main__":
 
     if args.export_ldscore_path:
         logging.info('LDscores copied to ' + str(args.export_ldscore_path))
-        subprocess.call(['gsutil','-m','cp','/home/outld/*',os.path.join(args.export_ldscore_path,"")])
+        subprocess.call(['gsutil','-m','cp','-r','/home/outld/*',os.path.join(args.export_ldscore_path,"")])
     
     # Writing the results
     logging.info('Results copied to ' + str(args.export_ldscore_path))
