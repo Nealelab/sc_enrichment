@@ -30,7 +30,7 @@ def parse_args():
     parser.add_argument('--ldscores-prefix', required=True, help = 'Prefix(a) for main annotation output. If multiple prefixa are used, need a comma-separated list. Need to have as many prefixa as files specified in --main-annot-file.')
     parser.add_argument('--out', required=True, help = 'Path to save the results')
 
-    parser.add_argument('--no_baseline', action='store_false', default=True, help = 'Do not condition on baseline annotations')
+    parser.add_argument('--no_baseline', action='store_true', default=False, help = 'Do not condition on baseline annotations')
 
     parser.add_argument('--condition-annot-file', help = 'File(s) containing the gene list for conditioning. If multiple files are used, need a comma-separated list')
     parser.add_argument('--condition-annot-ldscores', help = 'Folder(s) locations of ldscores to be used for conditioning. If multiple folders are used, need a comma-separated list. IMPORTANT: LDscores need to be in separated folders.')
@@ -201,14 +201,14 @@ def commonprefix(m):
             return s1[:i]
     return s1
 
-def prepare_params_file(args,prefixa_list,params_file='/home/params.ldcts'):
+def prepare_params_file(args,prefixa_list,ldfile_list,params_file='/home/params.ldcts'):
 
     """ Save the parameter file containing the name of the ldscores to use for partitioning heritability """
 
-    with open(params_file, 'a') as file:
-        for k in prefixa_list:
-            logging.debug('Save parameter file with this content: ' + '/home/outld/' + k + '.')
-            file.write(k + "\t" +"/home/outld/" + k + '.\n')
+    with open(params_file, 'w') as file:
+        for index,nameld in enumerate(prefixa_list):
+            logging.debug('Save parameter file with this content: ' + ldfile_list[index])
+            file.write(nameld + "\t" + ldfile_list[index] + '\n')
 
 
 
@@ -310,10 +310,20 @@ if __name__ == "__main__":
     plink_panel = commonprefix(name)
     logging.debug('plink_panel: ' + plink_panel)
 
-    #Create annotations for main outcome
+    #Create annotations for main outcome (put each annotation in a different folder)
+    #If it is an LDscore put it in a folder and get the name of the LDscore
+    ldfile_list = []
     if not is_ldscore:
         for index,main_file in enumerate(main_file_list):
-           prepare_annotations(args,gene_list='/home/' + os.path.basename(main_file), outldscore='/home/outld/' + prefixa_list[index], plink_panel=plink_panel)
+            subprocess.call(['mkdir','/home/outld/' + prefixa_list[index]])
+            outpath= '/home/outld/' + prefixa_list[index] + "/" + prefixa_list[index]
+            prepare_annotations(args,gene_list='/home/' + os.path.basename(main_file), outldscore=outpath, plink_panel=plink_panel)
+            ldfile_list.append(outpath + '.')
+    else:
+        for prefixum in prefixa_list:
+            name = glob.glob('/home/outld/' + prefixum + "/*")
+            ldfile_list.append(commonprefix(name))
+
 
     # If provided, prepare annotation for conditioning gene lists
     if args.condition_annot_file:
@@ -324,7 +334,7 @@ if __name__ == "__main__":
             prepare_annotations(args,gene_list='/home/' + k_name,outldscore='/home/outcondld/' + k_name + '/' + k_name, plink_panel=plink_panel)
 
     # Save parameter file
-    prepare_params_file(args,prefixa_list)
+    prepare_params_file(args,prefixa_list,ldfile_list)
 
     # Weight panel
     name_w = os.path.split(args.tkg_weights_folder)
@@ -355,7 +365,6 @@ if __name__ == "__main__":
             ld_cond_panels_file_t.append(commonprefix(glob.glob(folder + '/*')))
         logging.debug('ld_cond_panels_file_t: ' + ':'.join(ld_cond_panels_file_t))
 
-
     # Summary statistics
     list_sumstats_file=glob.glob("/home/ss/*")
 
@@ -368,6 +377,17 @@ if __name__ == "__main__":
             ld_cond_panel = ','.join(ld_cond_panels_file_t + [ld_ref_panel])
          if args.condition_annot_file and args.condition_annot_ldscores:
             ld_cond_panel = ','.join(ld_cond_panels_t + ld_cond_panels_file_t + [ld_ref_panel])
+    elif args.no_baseline and (args.condition_annot_ldscores or args.condition_annot_file):
+        if args.condition_annot_ldscores:
+            ld_cond_panel = ','.join(ld_cond_panels_t)
+        if args.condition_annot_file:
+            ld_cond_panel = ','.join(ld_cond_panels_file_t)
+        if args.condition_annot_file and args.condition_annot_ldscores:
+            ld_cond_panel = ','.join(ld_cond_panels_t + ld_cond_panels_file_t)
+    else:
+        sys.exit("No baseline panel or conditional panel specified - Interrupting")
+
+    logging.info('The following panel(s) will be used for conditioning: ' + ':'.join([ld_cond_panel]))
 
     # Partitioning heritability
     outfiles_list = []
