@@ -393,7 +393,7 @@ if __name__ == "__main__":
     outfiles_list = []
     for sumstats in list_sumstats_file:
         phname = os.path.basename(sumstats).replace('.sumstats.gz','')
-        outfile = '/home/' + phname + '.' + '.ldsc'
+        outfile = '/home/' + phname + '.ldsc'
         outfiles_list.append('/home/' + phname + '.ldsc.cell_type_results.txt')
         logging.info('Running partition LDscores for ' + phname)
         ldsc_results = ldsc_h2(infile=sumstats, phname=phname, params_file='/home/params.ldcts',ld_ref_panel=ld_cond_panel, ld_w_panel=ld_w_panel, outfile=outfile)

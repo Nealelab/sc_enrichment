@@ -62,3 +62,5 @@ dsub \
 ```
 
 sometime `dsub` does not recognize the google cloud credential, then you have to `export GOOGLE_APPLICATION_CREDENTIALS="your_google_cloud_service_account_key_file.json"`
+
+Check the `example/` folder for other examples of submissions programs. 
