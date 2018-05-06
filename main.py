@@ -18,10 +18,6 @@ from argparse import Namespace
 sys.path.insert(0, '/home/ldscore/ldsc-kt_exclude_files/')
 sys.path.insert(0, '/home/mtag/mtag-master/')
 
-print("PATH ADDED")
-
-print(glob.glob("/home/ldscore/ldsc-kt_exclude_files/*"))
-
 import ldscore.ldscore as ldsc
 import ldscore.sumstats as sumst
 from mtag import Logger_to_Logging
