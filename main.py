@@ -336,7 +336,7 @@ if __name__ == "__main__":
     ld_cond_panel = "No Conditional Panel"
 
     # Set up the ennviroment
-    #download_files(args,main_file,ss_list,prefix,is_ldscore_main,is_ldscore_cond)
+    download_files(args,main_file,ss_list,prefix,is_ldscore_main,is_ldscore_cond)
     
     # 1000 genome files
     name_plink = os.path.split(args.tkg_plink_folder)
@@ -349,7 +349,7 @@ if __name__ == "__main__":
     if not is_ldscore_main:
         noun = type_of_file('/home/' + os.path.basename(main_file))
         logging.info('The type of file that will be used in the analysis: '+noun)
-        #prepare_annotations(args,gene_list='/home/' + os.path.basename(main_file), outldscore='/home/outld/' + prefix , plink_panel=plink_panel,noun=noun)
+        prepare_annotations(args,gene_list='/home/' + os.path.basename(main_file), outldscore='/home/outld/' + prefix , plink_panel=plink_panel,noun=noun)
         name_main_ldscore = prefix + '.'
     else:
         temp_name_list =  [os.path.basename(x) for x in glob.glob('/home/outld/*')]
