@@ -15,8 +15,12 @@ from pybedtools import BedTool
 from argparse import Namespace
 
 
-sys.path.insert(0, '/home/ldscore/ldsc-master/')
+sys.path.insert(0, '/home/ldscore/ldsc-kt_exclude_files/')
 sys.path.insert(0, '/home/mtag/mtag-master/')
+
+print("PATH ADDED")
+
+print(glob.glob("/home/ldscore/ldsc-kt_exclude_files/*"))
 
 import ldscore.ldscore as ldsc
 import ldscore.sumstats as sumst
@@ -107,7 +111,7 @@ def download_files(args,main_file,ss_list,prefix,is_ldscore_main,is_ldscore_cond
 
     """Download files for downstream analyses"""
 
-    # Create folders
+    #Create folders
     logging.info('Creating folders')
     subprocess.call(['mkdir','/home/ss'])
     subprocess.call(['mkdir','/home/outld'])
@@ -132,8 +136,7 @@ def download_files(args,main_file,ss_list,prefix,is_ldscore_main,is_ldscore_cond
     if is_ldscore_main:   
         logging.info('Downloading main annotation LDscores(s):' + main_file)
         subprocess.call(['mkdir','/home/outld'])
-        subprocess.call(['mkdir','/home/outld/' + prefix])
-        subprocess.call(['gsutil','-m','cp','-r',os.path.join(main_file, "") + '*' ,'/home/outld/' + prefix])
+        subprocess.call(['gsutil','-m','cp','-r',os.path.join(main_file, "") + '*' ,'/home/outld/'])
     else:
         logging.info('Downloading main annotation file(s):' + main_file)
         subprocess.call(['gsutil','cp',main_file,'/home/'])
@@ -163,7 +166,6 @@ def download_files(args,main_file,ss_list,prefix,is_ldscore_main,is_ldscore_cond
     logging.info('Downloading file to map genes to positions')
     subprocess.call(['gsutil','cp',args.gene_anno_pos_file,'/home/GENENAME_gene_annot.txt'])
 
-
     # Download summary stats
     logging.info('Downloading summary statistic(s):' + ':'.join(ss_list))
     for ss in ss_list:
@@ -188,7 +190,7 @@ def prepare_annotations(args,gene_list,outldscore,plink_panel,noun):
                         '--chrom', str(chrom)])
         if 'binary' in noun:
             logging.debug('Running ldsc.py for chr ' + str(chrom) )
-            subprocess.call(['/home/ldscore/ldsc-master/ldsc.py',
+            subprocess.call(['/home/ldscore/ldsc-kt_exclude_files/ldsc.py',
                             '--l2',
                             '--bfile',plink_panel + str(chrom),
                             '--ld-wind-cm', "1",
@@ -199,7 +201,7 @@ def prepare_annotations(args,gene_list,outldscore,plink_panel,noun):
         elif (('continuous' in noun) and args.quantiles):
             try:
                 logging.debug('Running ldsc.py for chr ' + str(chrom) )
-                subprocess.call(['/home/ldscore/ldsc-master/ldsc.py',
+                subprocess.call(['/home/ldscore/ldsc-kt_exclude_files/ldsc.py',
                                 '--l2',
                                 '--bfile',plink_panel + str(chrom),
                                 '--ld-wind-cm', "1",
@@ -211,7 +213,7 @@ def prepare_annotations(args,gene_list,outldscore,plink_panel,noun):
                 sys.exit("The continuous annotation you've entered has non-unique quantile bin edges. Please use --cont-breaks flag instead with user specified bins.")    
         elif (('continuous' in noun) and args.cont_breaks):
             logging.debug('Running ldsc.py for chr ' + str(chrom) )
-            subprocess.call(['/home/ldscore/ldsc-master/ldsc.py',
+            subprocess.call(['/home/ldscore/ldsc-kt_exclude_files/ldsc.py',
                             '--l2',
                             '--bfile',plink_panel + str(chrom),
                             '--ld-wind-cm', "1",
@@ -233,13 +235,13 @@ def commonprefix(m):
             return s1[:i]
     return s1
 
-def prepare_params_file(args,prefix,ldfile_list,params_file='/home/params.ldcts'):
+def prepare_params_file(args,prefix,name_main_ldscore,params_file='/home/params.ldcts'):
 
     """ Save the parameter file containing the name of the ldscores to use for partitioning heritability """
 
     with open(params_file, 'w') as file:
-        logging.debug('Save parameter file with this content: ' + ldfile_list[0])
-        file.write(prefix + "\t" + ldfile_list[0] + '\n')
+        logging.debug('Save parameter file with prefix: ' + prefix + ' and ldscore: /home/outld/' + name_main_ldscore)
+        file.write(prefix + "\t" + '/home/outld/' + name_main_ldscore + '\n')
 
 
 
@@ -305,7 +307,7 @@ def ldsc_h2(infile, phname, params_file, ld_ref_panel, ld_w_panel,outfile):
                          exclude_chr_bp=None,
                          samp_prev=None,
                          pop_prev=None,
-              		 frqfile=None,
+              		     frqfile=None,
                          h2_cts=infile,
                          frqfile_chr=None,
                          print_all_cts=False,
@@ -326,12 +328,10 @@ if __name__ == "__main__":
     prefix = args.ldscores_prefix
     ss_list = args.summary_stats_files.split(',')
     if args.condition_annot:
-        #cond_file_list = args.condition_annot.split(',')
         is_ldscore_cond = recognize_ldscore_genelist(args.condition_annot)  
     else:
         is_ldscore_cond=None 
     is_ldscore_main = recognize_ldscore_genelist(main_file)
-    
     
     logging.info('The main annotation file(s) or LDscore(s) to Download: '+ main_file)
     logging.info('The summary statistic(s) to download: ' + ':'.join(ss_list))
@@ -340,7 +340,7 @@ if __name__ == "__main__":
     ld_cond_panel = "No Conditional Panel"
 
     # Set up the ennviroment
-    download_files(args,main_file,ss_list,prefix,is_ldscore_main,is_ldscore_cond)
+    #download_files(args,main_file,ss_list,prefix,is_ldscore_main,is_ldscore_cond)
     
     # 1000 genome files
     name_plink = os.path.split(args.tkg_plink_folder)
@@ -350,18 +350,14 @@ if __name__ == "__main__":
 
     #Create annotations for main outcome (put each annotation in a different folder)
     #If it is an LDscore put it in a folder and get the name of the LDscore
-    ldfile_list = []
     if not is_ldscore_main:
-        subprocess.call(['mkdir','/home/outld/' + prefix])
-        outpath= '/home/outld/' + prefix
-	noun = type_of_file('/home/' + os.path.basename(main_file))
+        noun = type_of_file('/home/' + os.path.basename(main_file))
         logging.info('The type of file that will be used in the analysis: '+noun)
-        prepare_annotations(args,gene_list='/home/' + os.path.basename(main_file), outldscore=outpath, plink_panel=plink_panel,noun=noun)
-        #do we need this ldfile_list anymore??
-	ldfile_list.append(outpath + '.')
+        #prepare_annotations(args,gene_list='/home/' + os.path.basename(main_file), outldscore='/home/outld/' + prefix , plink_panel=plink_panel,noun=noun)
+        name_main_ldscore = prefix + '.'
     else:
-        name = glob.glob('/home/outld/' + prefix + "/*")
-        ldfile_list.append(commonprefix(name))
+        temp_name_list =  [os.path.basename(x) for x in glob.glob('/home/outld/*')]
+        name_main_ldscore = commonprefix(temp_name_list)
 
 	    
     # If provided, prepare annotation for conditioning gene lists
@@ -374,7 +370,7 @@ if __name__ == "__main__":
             prepare_annotations(args,gene_list='/home/' + k_name,outldscore='/home/outcondld/' + k_name + '/' + k_name, plink_panel=plink_panel,noun=noun)
 
     # Save parameter file
-    prepare_params_file(args,prefix,ldfile_list)
+    prepare_params_file(args,prefix,name_main_ldscore)
 
     # Weight panel
     name_w = os.path.split(args.tkg_weights_folder)
@@ -436,7 +432,7 @@ if __name__ == "__main__":
         ldsc_results = ldsc_h2(infile=sumstats, phname=phname, params_file='/home/params.ldcts',ld_ref_panel=ld_cond_panel, ld_w_panel=ld_w_panel, outfile=outfile)
     
     # Writing report
-    write_report(report_name="_".join(prefix) + '.report',sum_stat='\t'.join(ss_list),main_panel='\t'.join(main_file), cond_panels=ld_cond_panel, outfile='\t'.join(outfiles_list))
+    write_report(report_name=prefix + '.report',sum_stat='\t'.join(ss_list),main_panel=main_file, cond_panels=ld_cond_panel, outfile='\t'.join(outfiles_list))
 
     if args.export_ldscore_path:
         logging.info('LDscores copied to ' + str(args.export_ldscore_path))

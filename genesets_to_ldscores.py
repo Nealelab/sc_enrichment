@@ -20,7 +20,6 @@ def make_annot_files(args):
     else: 
         GeneSet.columns = [args.gene_col_name,'ANNOT']
         binary=False
-    
     df_bim = pd.read_csv(args.bfile_chr + str(args.chrom) + '.bim',
 	        delim_whitespace=True, usecols = [0,1,2,3], names = ['CHR','SNP','CM','BP'])
     if 'rs' in GeneSet[args.gene_col_name].all():
@@ -47,7 +46,7 @@ def make_annot_files(args):
         genesetbed = BedTool(iter_df).sort().merge()
     else:
         df = df.sort_values(by=['CHR','START'])
-	iter_df = [['chr'+(str(int(x1)).lstrip('chr')), int(x2), int(x3),'annot',float(x4)] for (x1,x2,x3,x4) in np.array(df[['CHR', 'START', 'END','ANNOT']])]
+        iter_df = [['chr'+(str(x1).lstrip('chr')), int(x2), int(x3),'annot',str(x4)] for (x1,x2,x3,x4) in np.array(df[['CHR', 'START', 'END','ANNOT']])]
         genesetbed = BedTool(iter_df).sort()
     print('making annot file')
     iter_bim = [['chr'+str(x1), x2, x2] for (x1, x2) in np.array(df_bim[['CHR', 'BP']])]
@@ -67,7 +66,7 @@ def make_annot_files(args):
         bimbed = BedTool(iter_bim).sort()
         annotbed = bimbed.map(genesetbed,c=5,o='mean',null=0).to_dataframe()
         bp = annotbed.start
-        annot = annotbed.score
+        annot = annotbed.name
         df_int = pd.DataFrame({'BP': bp, 'ANNOT':annot})
         df_annot = pd.merge(df_bim, df_int, how='left', on='BP')
         num_snps_final = df_annot.ANNOT.count()
