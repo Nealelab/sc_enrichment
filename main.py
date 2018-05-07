@@ -101,7 +101,11 @@ def recognize_ldscore_genelist(inputs):
         sys.exit("Not all files are of the same type, check you didn't mixed up LDscores with genesets")
 
 
-
+def run_magma(magma_gwas_resuts,gene_list,out):
+    subprocess.call(['/home/magma',
+                            '--gene-results',magma_gwas_resuts,
+                            '--set-annot',gene_list,
+                            '--out',out])
 
 def download_files(args,main_file,ss_list,prefix,is_ldscore_main,is_ldscore_cond):
 
@@ -426,6 +430,10 @@ if __name__ == "__main__":
         outfiles_list.append('/home/' + phname + '.ldsc.cell_type_results.txt')
         logging.info('Running partition LDscores for ' + phname)
         ldsc_results = ldsc_h2(infile=sumstats, phname=phname, params_file='/home/params.ldcts',ld_ref_panel=ld_cond_panel, ld_w_panel=ld_w_panel, outfile=outfile)
+        if noun=='binary genelist':
+
+# with open("/home/"+ main_file) as input:
+#     grades = [line.split(",") for line in input.read().splitlines()]
     
     # Writing report
     write_report(report_name=prefix + '.report',sum_stat='\t'.join(ss_list),main_panel=main_file, cond_panels=ld_cond_panel, outfile='\t'.join(outfiles_list))
