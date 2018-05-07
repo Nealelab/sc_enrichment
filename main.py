@@ -345,7 +345,7 @@ if __name__ == "__main__":
     ld_cond_panel = "No Conditional Panel"
 
     # Set up the ennviroment
-    #download_files(args,main_file,ss_list,prefix,is_ldscore_main,is_ldscore_cond)
+    download_files(args,main_file,ss_list,prefix,is_ldscore_main,is_ldscore_cond)
     
     # 1000 genome files
     name_plink = os.path.split(args.tkg_plink_folder)
