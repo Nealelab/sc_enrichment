@@ -59,6 +59,9 @@ def parse_args():
     if (len(args.main_annot.split(',')) != len(args.ldscores_prefix.split(','))):
         parser.error("--main-annot and --ldscores-prefix should be of the same length")
 
+    if (args.cont_breaks):
+        args.cont_breaks = args.cont_breaks.strip()
+
     if args.verbose:
         logging.basicConfig(level=logging.DEBUG)
 
