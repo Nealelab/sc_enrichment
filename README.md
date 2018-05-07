@@ -33,7 +33,7 @@ The code should look something like this:
   b) Call the `main.py` script, for example:
   ```
   subprocess.call(['/home/sc_enrichement/sc_enrichement-master/main.py',
-                    '--main-annot-file',INPUT_GENELIST,
+                    '--main-annot',INPUT_GENELIST,
                     '--summary-stats-files',INPUT_SUMSTAT,
                     '--ldscores-prefix',PREFIX,
                     '--out',OUT,

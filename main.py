@@ -22,6 +22,8 @@ import ldscore.ldscore as ldsc
 import ldscore.sumstats as sumst
 from mtag import Logger_to_Logging
 
+
+
 def parse_args():
     parser = argparse.ArgumentParser()
 
@@ -48,7 +50,7 @@ def parse_args():
     parser.add_argument("--verbose", help="increase output verbosity",
                     action="store_true")
     parser.add_argument('--quantiles', type=int, default=5,required=False, help='If using a continuous annotation,the number of quantiles to split it into for regression.')
-    parser.add_argument('--cont-breaks',type=str,required=False,help='Specific boundary points to split your continuous annotation on, comma separated list e.g. 0.1,0.4,0.5,0.6')
+    parser.add_argument('--cont-breaks',type=str,required=False,help='Specific boundary points to split your continuous annotation on, comma separated list e.g. 0.1,0.4,0.5,0.6. ATTENTION: if you use negative values add a space in the beginning e.g. <space>-0.1,-0.4,0.5,0.6')
 
     args = parser.parse_args()
     if not (args.main_annot or args.summary_stats_files or args.ldscores_prefix or args.out):
@@ -430,11 +432,10 @@ if __name__ == "__main__":
         outfiles_list.append('/home/' + phname + '.ldsc.cell_type_results.txt')
         logging.info('Running partition LDscores for ' + phname)
         ldsc_results = ldsc_h2(infile=sumstats, phname=phname, params_file='/home/params.ldcts',ld_ref_panel=ld_cond_panel, ld_w_panel=ld_w_panel, outfile=outfile)
-        if noun=='binary genelist':
-
-# with open("/home/"+ main_file) as input:
-#     grades = [line.split(",") for line in input.read().splitlines()]
-    
+        #if noun=='binary genelist':
+        # with open("/home/"+ main_file) as input:
+        #     grades = [line.split(",") for line in input.read().splitlines()]
+            
     # Writing report
     write_report(report_name=prefix + '.report',sum_stat='\t'.join(ss_list),main_panel=main_file, cond_panels=ld_cond_panel, outfile='\t'.join(outfiles_list))
 
