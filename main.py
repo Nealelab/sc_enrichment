@@ -30,11 +30,14 @@ def parse_args():
 
     parser.add_argument('--export_ldscore_path', help = 'Path where to export the LDscores generated from --main-annot-file')
 
-    parser.add_argument('--gene-col-name', default="GENENAME", help = 'Column name for the files containing a gene list')
+
     parser.add_argument('--windowsize', type=int, default=100000, help = 'size of the window around the gene')
 
     parser.add_argument('--snp-list-file', default="gs://singlecellldscore/list.txt", help = 'Location of the file containing the list of SNPs to use for the generation of the LD-scores')
     parser.add_argument('--gene-anno-pos-file', default="gs://singlecellldscore/GENENAME_gene_annot.txt", help = 'Location of the file containing start and end position for each gene')
+
+    parser.add_argument('--gene-col-name', default="GENENAME", help = 'Gene column name in the file specified in --gene-anno-pos-file')
+
     parser.add_argument('--tkg-weights-folder', default="gs://singlecellldscore/1000G_Phase3_weights_hm3_no_MHC", help = 'Folder containing the chr-specific files with 1000 genomes weights for running LDscore regression')
     parser.add_argument('--tkg-plink-folder', default="gs://singlecellldscore/plink_files", help = 'Folder containing the chr-specific plink files from 1000 genomes to be used to create LDscores')
 
