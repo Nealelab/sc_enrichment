@@ -10,7 +10,7 @@ PREFIX = os.environ['PREFIX']
 OUT = os.environ['OUT']
 
 subprocess.call(['/home/sc_enrichement/sc_enrichement-master/main.py',
-                    '--main-annot-file',INPUT_GENELIST,
+                    '--main-annot',INPUT_GENELIST,
                     '--summary-stats-files',INPUT_SUMSTAT,
                     '--ldscores-prefix',PREFIX,
                     '--out',OUT,

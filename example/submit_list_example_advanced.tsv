@@ -1,2 +1,2 @@
---env INPUT_SUMSTAT	--env INPUT_GENELIST	--env COND_ANNOT_FILE	--env COND_ANNOT_LDSCORE	--env PREFIX	--env OUTLDSCORE	--env OUT
-gs://singlecellldscore/example/asd_summary_stats.sumstats.gz,gs://singlecellldscore/example/scz_summary_stats.sumstats.gz	gs://singlecellldscore/example/example.geneset,gs://singlecellldscore/example/example2.geneset	gs://singlecellldscore/example/example_cond.geneset,gs://singlecellldscore/example/example_cond2.geneset	gs://singlecellldscore/example/anno_ldscore/	example,example2	gs://singlecellldscore/example/outld/	gs://singlecellldscore/example/
+--env INPUT_SUMSTAT	--env INPUT_GENELIST	--env COND_ANNOT_FILE	--env PREFIX	--env OUTLDSCORE	--env OUT
+gs://singlecellldscore/example/asd_summary_stats.sumstats.gz,gs://singlecellldscore/example/scz_summary_stats.sumstats.gz	gs://singlecellldscore/example/example.geneset	gs://singlecellldscore/example/anno_ldscore/	example2	gs://singlecellldscore/example/outld/	gs://singlecellldscore/example/
