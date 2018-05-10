@@ -10,12 +10,10 @@ make -C /home/bedtools2 && \
 cp /home/bedtools2/bin/bedtools /usr/local/bin/ && \
 cp /home/bedtools2/bin/bedtools /usr/bin/
 
-RUN wget https://ctg.cncr.nl/software/MAGMA/prog/magma_v1.06b.zip --quiet -P /home/  && \
+RUN wget https://ctg.cncr.nl/software/MAGMA/prog/magma_v1.06b.zip --quiet -P /home/ && \
 unzip -q /home/magma_v1.06b.zip -d /home/
 
-
 RUN pip install -U joblib==0.11 pandas==0.19.2 numpy==1.11.3 scipy==0.18.1 bitarray==0.8.1 pybedtools==0.7.10 h5py==2.7.1
-
 
 RUN	mkdir -p /home/ldscore/ && \
 	wget --quiet -P /home/ldscore/ https://github.com/Nealelab/ldsc/archive/kt_exclude_files.zip && \

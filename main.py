@@ -104,7 +104,7 @@ def recognize_ldscore_genelist(inputs):
 def run_magma(magma_gwas_resuts,out):
     subprocess.call(['/home/magma',
                             '--gene-results',magma_gwas_resuts,
-                            '--set-annot','/home/gene_list_for_magma',
+                            '--set-annot','/mnt/data/gene_list_for_magma',
                             '--out',out])
 
 def download_files(args,main_file,ss_list,prefix,is_ldscore_main,is_ldscore_cond):
@@ -113,68 +113,68 @@ def download_files(args,main_file,ss_list,prefix,is_ldscore_main,is_ldscore_cond
 
     #Create folders
     logging.info('Creating folders')
-    subprocess.call(['mkdir','/home/ss'])
-    subprocess.call(['mkdir','/home/outld'])
-    subprocess.call(['mkdir','/home/inld'])
-    subprocess.call(['mkdir','/home/tmp'])
+    subprocess.call(['mkdir','/mnt/data/ss'])
+    subprocess.call(['mkdir','/mnt/data/outld'])
+    subprocess.call(['mkdir','/mnt/data/inld'])
+    subprocess.call(['mkdir','/mnt/data/tmp'])
 
     # Download plink files
     logging.info('Downloading 1000 genomes plink files')
-    subprocess.call(['gsutil','-m','cp','-r',args.tkg_plink_folder,'/home/'])
+    subprocess.call(['gsutil','-m','cp','-r',args.tkg_plink_folder,'/mnt/data/'])
 
     # Downlad 1000 genome weights
     logging.info('Downloading 1000 genomes weights for ldscore')
-    subprocess.call(['gsutil','-m','cp','-r',args.tkg_weights_folder,"/home/inld/"])
+    subprocess.call(['gsutil','-m','cp','-r',args.tkg_weights_folder,"/mnt/data/inld/"])
 
     # Downlad frequency files
     logging.info('Downloading 1000 genomes frequencies')
-    subprocess.call(['gsutil','-m','cp','-r',args.tkg_freq_folder,"/home/"])
+    subprocess.call(['gsutil','-m','cp','-r',args.tkg_freq_folder,"/mnt/data/"])
 
 
     # Download baseline
     if not args.no_baseline:
         logging.info('Downloading baseline annotation')
-        subprocess.call(['gsutil','-m','cp','-r',args.baseline_ldscores_folder,"/home/inld/"])
+        subprocess.call(['gsutil','-m','cp','-r',args.baseline_ldscores_folder,"/mnt/data/inld/"])
 
 
     # Download main annotations
     if is_ldscore_main:   
         logging.info('Downloading main annotation LDscores(s):' + main_file)
-        subprocess.call(['mkdir','/home/outld'])
-        subprocess.call(['gsutil','-m','cp','-r',os.path.join(main_file, "") + '*' ,'/home/outld/'])
+        subprocess.call(['mkdir','/mnt/data/outld'])
+        subprocess.call(['gsutil','-m','cp','-r',os.path.join(main_file, "") + '*' ,'/mnt/data/outld/'])
     else:
         logging.info('Downloading main annotation file(s):' + main_file)
-        subprocess.call(['gsutil','cp',main_file,'/home/'])
+        subprocess.call(['gsutil','cp',main_file,'/mnt/data/'])
 
     # Download conditional annotations
     if args.condition_annot:
         if (is_ldscore_cond and is_ldscore_cond is not None):
             logging.info('Downloading conditional ldscores annotation(s)')
-            subprocess.call(['mkdir','/home/cond_ldscores'])
+            subprocess.call(['mkdir','/mnt/data/cond_ldscores'])
             cond_ld_list = args.condition_annot.split(',')
             for k in cond_ld_list:
                 ts = os.path.join(random_string(7),"")
-                subprocess.call(['mkdir','/home/cond_ldscores/' + ts])
-                subprocess.call(['gsutil','-m','cp','-r',os.path.join(k, "") + '*' ,'/home/cond_ldscores/' + ts])
+                subprocess.call(['mkdir','/mnt/data/cond_ldscores/' + ts])
+                subprocess.call(['gsutil','-m','cp','-r',os.path.join(k, "") + '*' ,'/mnt/data/cond_ldscores/' + ts])
         else:
             logging.info('Downloading file(s) containing conditional annotations')
-            subprocess.call(['mkdir','/home/outcondld'])
+            subprocess.call(['mkdir','/mnt/data/outcondld'])
             cond_file_list = args.condition_annot.split(',')
             for k in cond_file_list:
-                subprocess.call(['gsutil','cp',k,"/home/"])
+                subprocess.call(['gsutil','cp',k,"/mnt/data/"])
 	    
     # Dowload SNP-list for generating LD-scores
     logging.info('Downloading SNP list for LDscore')
-    subprocess.call(['gsutil','cp',args.snp_list_file,'/home/list.txt'])
+    subprocess.call(['gsutil','cp',args.snp_list_file,'/mnt/data/list.txt'])
 
     # Download file mapping SNPs to positions
     logging.info('Downloading file to map genes to positions')
-    subprocess.call(['gsutil','cp',args.gene_anno_pos_file,'/home/GENENAME_gene_annot.txt'])
+    subprocess.call(['gsutil','cp',args.gene_anno_pos_file,'/mnt/data/GENENAME_gene_annot.txt'])
 
     # Download summary stats
     logging.info('Downloading summary statistic(s):' + ':'.join(ss_list))
     for ss in ss_list:
-        subprocess.call(['gsutil','cp',ss,'/home/ss/'])
+        subprocess.call(['gsutil','cp',ss,'/mnt/data/ss/'])
 
 
 def prepare_annotations(args,gene_list,outldscore,plink_panel,noun):
@@ -187,9 +187,9 @@ def prepare_annotations(args,gene_list,outldscore,plink_panel,noun):
         logging.debug('Running genesets_to_ldscores.py for chr ' + str(chrom) + ' and geneset-file ' + str(gene_list))
         subprocess.call(['/home/sc_enrichement/sc_enrichement-master/genesets_to_ldscores.py',
                         '--geneset-file',gene_list,
-                        '--gene-annot',"/home/GENENAME_gene_annot.txt",
+                        '--gene-annot',"/mnt/data/GENENAME_gene_annot.txt",
                         '--bfile-chr',plink_panel,
-                        '--ldscores_prefix','/home/tmp/temp_dscore',
+                        '--ldscores_prefix','/mnt/data/tmp/temp_dscore',
                         '--windowsize',str(args.windowsize),
                         '--gene-col-name', str(args.gene_col_name),
                         '--chrom', str(chrom)])
@@ -199,10 +199,10 @@ def prepare_annotations(args,gene_list,outldscore,plink_panel,noun):
                             '--l2',
                             '--bfile',plink_panel + str(chrom),
                             '--ld-wind-cm', "1",
-                            '--annot','/home/tmp/temp_dscore.' + str(chrom) + '.annot.gz',
+                            '--annot','/mnt/data/tmp/temp_dscore.' + str(chrom) + '.annot.gz',
                             '--thin-annot',
                             '--out', outldscore + "." + str(chrom),
-                            '--print-snps',"/home/list.txt"])
+                            '--print-snps',"/mnt/data/list.txt"])
         elif (('continuous' in noun) and args.quantiles):
             try:
                 logging.debug('Running ldsc.py for chr ' + str(chrom) )
@@ -210,7 +210,7 @@ def prepare_annotations(args,gene_list,outldscore,plink_panel,noun):
                                 '--l2',
                                 '--bfile',plink_panel + str(chrom),
                                 '--ld-wind-cm', "1",
-                                '--cont-bin','/home/tmp/temp_dscore.' + str(chrom) + '.cont_bin.gz',
+                                '--cont-bin','/mnt/data/tmp/temp_dscore.' + str(chrom) + '.cont_bin.gz',
                                 '--cont-quantiles',str(args.quantiles),
                                 '--thin-annot',
                                 '--out', outldscore + "." + str(chrom)])
@@ -222,7 +222,7 @@ def prepare_annotations(args,gene_list,outldscore,plink_panel,noun):
                             '--l2',
                             '--bfile',plink_panel + str(chrom),
                             '--ld-wind-cm', "1",
-                            '--cont-bin','/home/tmp/temp_dscore.' + str(chrom) + '.cont_bin.gz',
+                            '--cont-bin','/mnt/data/tmp/temp_dscore.' + str(chrom) + '.cont_bin.gz',
                             '--cont-breaks',args.cont_breaks,
                             '--thin-annot',
                             '--out', outldscore + "." + str(chrom)])
@@ -240,13 +240,13 @@ def commonprefix(m):
             return s1[:i]
     return s1
 
-def prepare_params_file(args,prefix,name_main_ldscore,params_file='/home/params.ldcts'):
+def prepare_params_file(args,prefix,name_main_ldscore,params_file='/mnt/data/params.ldcts'):
 
     """ Save the parameter file containing the name of the ldscores to use for partitioning heritability """
 
     with open(params_file, 'w') as file:
-        logging.debug('Save parameter file with prefix: ' + prefix + ' and ldscore: /home/outld/' + name_main_ldscore)
-        file.write(prefix + "\t" + '/home/outld/' + name_main_ldscore + '\n')
+        logging.debug('Save parameter file with prefix: ' + prefix + ' and ldscore: /mnt/data/outld/' + name_main_ldscore)
+        file.write(prefix + "\t" + '/mnt/data/outld/' + name_main_ldscore + '\n')
 
 
 
@@ -267,26 +267,26 @@ def download_magma():
     """ Download MAGMA files and do initial gene assignment """
 
     logging.info('Download 1000 genomes reference panel')
-    subprocess.call(['gsutil','cp','gs://singlecellldscore/g1000_eur.zip','/home/'])
-    subprocess.call(['unzip','-o','/home/g1000_eur.zip','-d','/home/'])
-    subprocess.call(['gsutil','cp','gs://singlecellldscore/NCBI37.3.gene.name.loc','/home/'])
+    subprocess.call(['gsutil','cp','gs://singlecellldscore/g1000_eur.zip','/mnt/data/'])
+    subprocess.call(['unzip','-o','/mnt/data/g1000_eur.zip','-d','/mnt/data/'])
+    subprocess.call(['gsutil','cp','gs://singlecellldscore/NCBI37.3.gene.name.loc','/mnt/data/'])
     subprocess.call(['/home/magma',
                                 '--annotate',
-                                '--snp-loc','/home/g1000_eur.bim',
-                                '--gene-loc','/home/NCBI37.3.gene.name.loc',
-                                '--out','/home/magma_annotation_1000g_h37'])
+                                '--snp-loc','/mnt/data/g1000_eur.bim',
+                                '--gene-loc','/mnt/data/NCBI37.3.gene.name.loc',
+                                '--out','/mnt/data/magma_annotation_1000g_h37'])
 
 def prepare_magma_binary(args,noun):
 
     """Download and prepare geneset file for MAGMA analysis for binary genelist"""
 
-    with open("/home/"+ os.path.basename(args.main_annot)) as input:
+    with open("/mnt/data/"+ os.path.basename(args.main_annot)) as input:
         content = input.read().splitlines() 
     content.insert(0,args.ldscores_prefix)
     outlist = (" ".join(map(str, content)))
-    with open('/home/gene_list_for_magma', 'w') as output:
+    with open('/mnt/data/gene_list_for_magma', 'w') as output:
         output.write(outlist)
-    logging.info('Wrote geneset for MAGMA: /home/gene_list_for_magma')
+    logging.info('Wrote geneset for MAGMA: /mnt/data/gene_list_for_magma')
 
     download_magma()
 
@@ -295,7 +295,7 @@ def prepare_magma_continuous(args,noun):
 
     """Download and prepare geneset file for MAGMA analysis for continuous genelist"""
 
-    df = pd.read_csv("/home/"+ os.path.basename(args.main_annot), sep="\t", header=None)
+    df = pd.read_csv("/mnt/data/"+ os.path.basename(args.main_annot), sep="\t", header=None)
 
     max_vec = np.max(df[1])
     min_vec = np.min(df[1])
@@ -329,9 +329,9 @@ def prepare_magma_continuous(args,noun):
         dfout=df.loc[df["anno_break"] == anno]
         outlist = (" ".join(map(str, dfout[0])))
         outlist = args.ldscores_prefix + "_" + labs[ind] + " " + outlist
-        with open('/home/gene_list_for_magma_'+str(ind), 'w') as output:
+        with open('/mnt/data/gene_list_for_magma_'+str(ind), 'w') as output:
             output.write(outlist)
-        logging.info('Wrote geneset for MAGMA: /home/gene_list_for_magma_'+str(ind))
+        logging.info('Wrote geneset for MAGMA: /mnt/data/gene_list_for_magma_'+str(ind))
 
     download_magma()
 
@@ -345,28 +345,28 @@ def run_magma(sumstat,phname):
     df = df.dropna(axis=0, how='any')
     df["N"] = df['N'].astype(int)
     dfout = df[['SNP', 'P', 'N']]
-    dfout.to_csv('/home/tmp/extracted_for_magma_'+phname,index=False,sep='\t')
+    dfout.to_csv('/mnt/data/tmp/extracted_for_magma_'+phname,index=False,sep='\t')
     subprocess.call(['/home/magma',
-                            '--bfile','/home/g1000_eur',
-                            '--pval','/home/tmp/extracted_for_magma_' + phname,
+                            '--bfile','/mnt/data/g1000_eur',
+                            '--pval','/mnt/data/tmp/extracted_for_magma_' + phname,
                             'ncol=N',
-                            '--gene-annot','/home/magma_annotation_1000g_h37.genes.annot',
-                            '--out','/home/tmp/genes_for_magma_'+ phname])
+                            '--gene-annot','/mnt/data/magma_annotation_1000g_h37.genes.annot',
+                            '--out','/mnt/data/tmp/genes_for_magma_'+ phname])
 
-    n_magma_genefiles=len(glob.glob('/home/gene_list_for_magma*'))
+    n_magma_genefiles=len(glob.glob('/mnt/data/gene_list_for_magma*'))
     if n_magma_genefiles==1:
         subprocess.call(['/home/magma',
-                                '--gene-results','/home/tmp/genes_for_magma_'+ phname + '.genes.raw',
-                                '--set-annot','/home/gene_list_for_magma',
-                                '--out','/home/magma_results_' + phname])
+                                '--gene-results','/mnt/data/tmp/genes_for_magma_'+ phname + '.genes.raw',
+                                '--set-annot','/mnt/data/gene_list_for_magma',
+                                '--out','/mnt/data/magma_results_' + phname])
     elif n_magma_genefiles > 1:
         for quantvalue in range(n_magma_genefiles):
             subprocess.call(['/home/magma',
-                                '--gene-results','/home/tmp/genes_for_magma_'+ phname + '.genes.raw',
-                                '--set-annot','/home/gene_list_for_magma_' + str(quantvalue),
-                                '--out','/home/magma_results_' + str(quantvalue) + "_" + phname])
+                                '--gene-results','/mnt/data/tmp/genes_for_magma_'+ phname + '.genes.raw',
+                                '--set-annot','/mnt/data/gene_list_for_magma_' + str(quantvalue),
+                                '--out','/mnt/data/magma_results_' + str(quantvalue) + "_" + phname])
 
-    logging.info('MAGMA file generated: '+ '/home/magma_results_' + phname)
+    logging.info('MAGMA file generated: '+ '/mnt/data/magma_results_' + phname)
 
 
 def ldsc_h2(infile, phname, params_file, ld_ref_panel, ld_w_panel, tg_f_panel,outfile):
@@ -411,19 +411,19 @@ if __name__ == "__main__":
     
     # 1000 genome files
     name_plink = os.path.split(args.tkg_plink_folder)
-    name = glob.glob('/home/' + name_plink[-1] + "/*")
+    name = glob.glob('/mnt/data/' + name_plink[-1] + "/*")
     plink_panel = commonprefix(name)
     logging.debug('plink_panel: ' + plink_panel)
 
     #Create annotations for main outcome (put each annotation in a different folder)
     #If it is an LDscore put it in a folder and get the name of the LDscore
     if not is_ldscore_main:
-        noun = type_of_file('/home/' + os.path.basename(main_file))
+        noun = type_of_file('/mnt/data/' + os.path.basename(main_file))
         logging.info('The type of file that will be used in the analysis: '+noun)
-        prepare_annotations(args,gene_list='/home/' + os.path.basename(main_file), outldscore='/home/outld/' + prefix , plink_panel=plink_panel,noun=noun)
+        prepare_annotations(args,gene_list='/mnt/data/' + os.path.basename(main_file), outldscore='/mnt/data/outld/' + prefix , plink_panel=plink_panel,noun=noun)
         name_main_ldscore = prefix + '.'
     else:
-        temp_name_list =  [os.path.basename(x) for x in glob.glob('/home/outld/*')]
+        temp_name_list =  [os.path.basename(x) for x in glob.glob('/mnt/data/outld/*')]
         name_main_ldscore = commonprefix(temp_name_list)
 
 	    
@@ -432,36 +432,36 @@ if __name__ == "__main__":
         cond_list = args.condition_annot.split(',')
         for k in cond_list:
             k_name = os.path.basename(k)
-            noun = type_of_file('/home/' + k_name)
-            subprocess.call(['mkdir','/home/outcondld/' + k_name])
-            prepare_annotations(args,gene_list='/home/' + k_name,outldscore='/home/outcondld/' + k_name + '/' + k_name, plink_panel=plink_panel,noun=noun)
+            noun = type_of_file('/mnt/data/' + k_name)
+            subprocess.call(['mkdir','/mnt/data/outcondld/' + k_name])
+            prepare_annotations(args,gene_list='/mnt/data/' + k_name,outldscore='/mnt/data/outcondld/' + k_name + '/' + k_name, plink_panel=plink_panel,noun=noun)
 
     # Save parameter file
     prepare_params_file(args,prefix,name_main_ldscore)
 
     # Weight panel
     name_w = os.path.split(args.tkg_weights_folder)
-    name = glob.glob('/home/inld/' + name_w[-1] + "/*")
+    name = glob.glob('/mnt/data/inld/' + name_w[-1] + "/*")
     ld_w_panel = commonprefix(name)
     logging.debug('ld_w_panel: ' + ld_w_panel)
 
 
     # Frequency panel
     name_f = os.path.split(args.tkg_freq_folder)
-    name = glob.glob('/home/' + name_f[-1] + "/*")
+    name = glob.glob('/mnt/data/' + name_f[-1] + "/*")
     tg_f_panel = commonprefix(name)
     logging.debug('tg_f_panel: ' + tg_f_panel)
 
     # LDscore baseline panel
     if not args.no_baseline:
         name_ldref = os.path.split(args.baseline_ldscores_folder)
-        name = glob.glob('/home/inld/' + name_ldref[-1] + "/*")
+        name = glob.glob('/mnt/data/inld/' + name_ldref[-1] + "/*")
         ld_ref_panel = commonprefix(name)
         logging.debug('ld_ref_panel: ' + ld_ref_panel)
 
     # LDscore conditional panels
     if is_ldscore_cond:
-        name_ldcond = glob.glob('/home/cond_ldscores/*')
+        name_ldcond = glob.glob('/mnt/data/cond_ldscores/*')
         ld_cond_panels_t = []
         for folder in name_ldcond:
             ld_cond_panels_t.append(commonprefix(glob.glob(folder + '/*')))
@@ -469,14 +469,14 @@ if __name__ == "__main__":
 
     # LDscore conditional panels (created from files)
     if not is_ldscore_cond:
-        name_ldcond_file = glob.glob('/home/outcondld/*')
+        name_ldcond_file = glob.glob('/mnt/data/outcondld/*')
         ld_cond_panels_file_t = []
         for folder in name_ldcond_file:
             ld_cond_panels_file_t.append(commonprefix(glob.glob(folder + '/*')))
         logging.debug('ld_cond_panels_file_t: ' + ':'.join(ld_cond_panels_file_t))
 
     # Summary statistics
-    list_sumstats_file=glob.glob("/home/ss/*")
+    list_sumstats_file=glob.glob("/mnt/data/ss/*")
 
     #If it is just a gene-list run MAGMA
     if noun=='binary genelist':
@@ -505,10 +505,10 @@ if __name__ == "__main__":
     outfiles_list = []
     for sumstats in list_sumstats_file:
         phname = os.path.basename(sumstats).replace('.sumstats.gz','')
-        outfile = '/home/' + phname + '.ldsc'
-        outfiles_list.append('/home/' + phname + '.ldsc.cell_type_results.txt')
+        outfile = '/mnt/data/' + phname + '.ldsc'
+        outfiles_list.append('/mnt/data/' + phname + '.ldsc.cell_type_results.txt')
         logging.info('Running partition LDscores for ' + phname)
-        ldsc_results = ldsc_h2(infile=sumstats, phname=phname, params_file='/home/params.ldcts',ld_ref_panel=ld_cond_panel, ld_w_panel=ld_w_panel,tg_f_panel=tg_f_panel,outfile=outfile)
+        ldsc_results = ldsc_h2(infile=sumstats, phname=phname, params_file='/mnt/data/params.ldcts',ld_ref_panel=ld_cond_panel, ld_w_panel=ld_w_panel,tg_f_panel=tg_f_panel,outfile=outfile)
         if noun=='binary genelist' or noun=='continuous genelist':
             run_magma(sumstats,phname)
 
@@ -517,13 +517,13 @@ if __name__ == "__main__":
 
     if args.export_ldscore_path:
         logging.info('LDscores copied to ' + str(args.export_ldscore_path))
-        subprocess.call(['gsutil','-m','cp','-r','/home/outld/*',os.path.join(args.export_ldscore_path,"")])
+        subprocess.call(['gsutil','-m','cp','-r','/mnt/data/outld/*',os.path.join(args.export_ldscore_path,"")])
     
     # Writing the results
     logging.info('Results copied to ' + str(args.export_ldscore_path))
-    subprocess.call(['gsutil','cp','/home/*.ldsc.cell_type_results.txt',os.path.join(args.out,"")])
+    subprocess.call(['gsutil','cp','/mnt/data/*.ldsc.cell_type_results.txt',os.path.join(args.out,"")])
     subprocess.call(['gsutil','cp',"_".join(prefix) + '.report',os.path.join(args.out,"")])
     if noun=='binary genelist' or noun=='continuous genelist':
-        subprocess.call(['gsutil','cp','/home/magma_results_*',os.path.join(args.out,"")])
+        subprocess.call(['gsutil','cp','/mnt/data/magma_results_*',os.path.join(args.out,"")])
 
     logging.info('FINITO!')
