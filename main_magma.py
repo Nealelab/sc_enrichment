@@ -113,9 +113,6 @@ def prepare_magma_continuous(args,noun):
 
     df = pd.read_csv("/mnt/data/"+ os.path.basename(args.main_annot), sep="\t", header=None)
 
-    df = pd.read_csv("/mnt/data/allclusters_all_annot_4m.txt", sep="\t", header=None)
-
-
     if args.quantiles:
         df["anno_break"] = pd.qcut(df[1], args.quantiles)
         temp_breaks = pd.unique(df["anno_break"])
@@ -236,8 +233,6 @@ if __name__ == "__main__":
             run_magma(sumstats,phname)
 
         # Writing the results
-        logging.info('Results copied to ' + str(args.export_ldscore_path))
-
         subprocess.call(['gsutil','cp','/mnt/data/magma_results_*',os.path.join(args.out,"")])
 
         logging.info('FINITO!')
