@@ -104,12 +104,6 @@ def recognize_ldscore_genelist(inputs):
         sys.exit("Not all files are of the same type, check you didn't mixed up LDscores with genesets")
 
 
-def run_magma(magma_gwas_resuts,out):
-    subprocess.call(['/home/magma',
-                            '--gene-results',magma_gwas_resuts,
-                            '--set-annot','/mnt/data/gene_list_for_magma',
-                            '--out',out])
-
 def download_files(args,main_file,ss_list,prefix,is_ldscore_main,is_ldscore_cond):
 
     """Download files for downstream analyses"""
@@ -264,114 +258,6 @@ def write_report(report_name,sum_stat,main_panel,cond_panels,outfile):
         file.write("Main output file(s): " + outfile + '\n')
 
 
-
-def download_magma():
-
-    """ Download MAGMA files and do initial gene assignment """
-
-    logging.info('Download 1000 genomes reference panel')
-    subprocess.call(['gsutil','cp','gs://singlecellldscore/g1000_eur.zip','/mnt/data/'])
-    subprocess.call(['unzip','-o','/mnt/data/g1000_eur.zip','-d','/mnt/data/'])
-    subprocess.call(['gsutil','cp','gs://singlecellldscore/NCBI37.3.gene.name.loc','/mnt/data/'])
-    subprocess.call(['/home/magma',
-                                '--annotate',
-                                '--snp-loc','/mnt/data/g1000_eur.bim',
-                                '--gene-loc','/mnt/data/NCBI37.3.gene.name.loc',
-                                '--out','/mnt/data/magma_annotation_1000g_h37'])
-
-def prepare_magma_binary(args,noun):
-
-    """Download and prepare geneset file for MAGMA analysis for binary genelist"""
-
-    with open("/mnt/data/"+ os.path.basename(args.main_annot)) as input:
-        content = input.read().splitlines() 
-    content.insert(0,args.ldscores_prefix)
-    outlist = (" ".join(map(str, content)))
-    with open('/mnt/data/gene_list_for_magma', 'w') as output:
-        output.write(outlist)
-    logging.info('Wrote geneset for MAGMA: /mnt/data/gene_list_for_magma')
-
-    download_magma()
-
-
-def prepare_magma_continuous(args,noun):
-
-    """Download and prepare geneset file for MAGMA analysis for continuous genelist"""
-
-    df = pd.read_csv("/mnt/data/"+ os.path.basename(args.main_annot), sep="\t", header=None)
-
-    max_vec = np.max(df[1])
-    min_vec = np.min(df[1])
-
-    quantiles_str=args.cont_breaks
-    cut_breaks = [float(x) for x in quantiles_str.split(',')]
-
-    name_breaks = list(cut_breaks)
-
-    logging.info('MAGMA: using the following breaks: '+ "; ".join([str(i) for i in name_breaks]))
-
-    if np.all(cut_breaks <= max_vec):
-        name_breaks.append(max_vec)
-        cut_breaks.append(max_vec+1)
-
-    if np.all(cut_breaks >= min_vec):
-        name_breaks.append(min_vec)
-        cut_breaks.append(min_vec-1)
-
-    name_breaks.sort()
-    cut_breaks.sort()
-    n_breaks = len(cut_breaks)
-
-    name_breaks[0] = 'min'
-    name_breaks[-1] = 'max'
-    name_breaks = [str(x) for x in name_breaks]
-    labs = [name_breaks[i]+'_'+name_breaks[i+1] for i in xrange(n_breaks-1)]
-
-    df["anno_break"] = pd.cut(df[1], bins=cut_breaks, labels=labs)
-    for ind,anno in enumerate(pd.unique(df["anno_break"])):
-        dfout=df.loc[df["anno_break"] == anno]
-        outlist = (" ".join(map(str, dfout[0])))
-        outlist = args.ldscores_prefix + "_" + labs[ind] + " " + outlist
-        with open('/mnt/data/gene_list_for_magma_'+str(ind), 'w') as output:
-            output.write(outlist)
-        logging.info('Wrote geneset for MAGMA: /mnt/data/gene_list_for_magma_'+str(ind))
-
-    download_magma()
-
-
-def run_magma(sumstat,phname):
-
-    """ Run MAGMA analysis for each sumistat and given the geneset """
-
-    df = pd.read_csv(sumstat, compression='gzip', header=0, sep='\t')
-    df["P"] = 2*st.norm.cdf(-abs(df.Z))
-    df = df.dropna(axis=0, how='any')
-    df["N"] = df['N'].astype(int)
-    dfout = df[['SNP', 'P', 'N']]
-    dfout.to_csv('/mnt/data/tmp/extracted_for_magma_'+phname,index=False,sep='\t')
-    subprocess.call(['/home/magma',
-                            '--bfile','/mnt/data/g1000_eur',
-                            '--pval','/mnt/data/tmp/extracted_for_magma_' + phname,
-                            'ncol=N',
-                            '--gene-annot','/mnt/data/magma_annotation_1000g_h37.genes.annot',
-                            '--out','/mnt/data/tmp/genes_for_magma_'+ phname])
-
-    n_magma_genefiles=len(glob.glob('/mnt/data/gene_list_for_magma*'))
-    if n_magma_genefiles==1:
-        subprocess.call(['/home/magma',
-                                '--gene-results','/mnt/data/tmp/genes_for_magma_'+ phname + '.genes.raw',
-                                '--set-annot','/mnt/data/gene_list_for_magma',
-                                '--out','/mnt/data/magma_results_' + phname])
-    elif n_magma_genefiles > 1:
-        for quantvalue in range(n_magma_genefiles):
-            subprocess.call(['/home/magma',
-                                '--gene-results','/mnt/data/tmp/genes_for_magma_'+ phname + '.genes.raw',
-                                '--set-annot','/mnt/data/gene_list_for_magma_' + str(quantvalue),
-                                '--out','/mnt/data/magma_results_' + str(quantvalue) + "_" + phname])
-
-    logging.info('MAGMA file generated: '+ '/mnt/data/magma_results_' + phname)
-
-
 def ldsc_h2(infile, phname, params_file, ld_ref_panel, ld_w_panel, tg_f_panel,outfile):
 
     """Perform partioning hertiability """
@@ -481,12 +367,6 @@ if __name__ == "__main__":
     # Summary statistics
     list_sumstats_file=glob.glob("/mnt/data/ss/*")
 
-    #If it is just a gene-list run MAGMA
-    if noun=='binary genelist':
-        prepare_magma_binary(args,noun)
-    elif noun=='continuous genelist':
-        prepare_magma_continuous(args,noun)
-
     # Panels for conditioning
     if not args.no_baseline:
          ld_cond_panel = ld_ref_panel
@@ -512,8 +392,7 @@ if __name__ == "__main__":
         outfiles_list.append('/mnt/data/' + phname + '.ldsc.cell_type_results.txt')
         logging.info('Running partition LDscores for ' + phname)
         ldsc_results = ldsc_h2(infile=sumstats, phname=phname, params_file='/mnt/data/params.ldcts',ld_ref_panel=ld_cond_panel, ld_w_panel=ld_w_panel,tg_f_panel=tg_f_panel,outfile=outfile)
-        if noun=='binary genelist' or noun=='continuous genelist':
-            run_magma(sumstats,phname)
+
 
     # Writing report
     write_report(report_name=prefix + '.report',sum_stat='\t'.join(ss_list),main_panel=main_file, cond_panels=ld_cond_panel, outfile='\t'.join(outfiles_list))
@@ -526,7 +405,5 @@ if __name__ == "__main__":
     logging.info('Results copied to ' + str(args.export_ldscore_path))
     subprocess.call(['gsutil','cp','/mnt/data/*.ldsc.cell_type_results.txt',os.path.join(args.out,"")])
     subprocess.call(['gsutil','cp',"_".join(prefix) + '.report',os.path.join(args.out,"")])
-    if noun=='binary genelist' or noun=='continuous genelist':
-        subprocess.call(['gsutil','cp','/mnt/data/magma_results_*',os.path.join(args.out,"")])
 
     logging.info('FINITO!')
