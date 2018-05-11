@@ -23,9 +23,7 @@ def parse_args():
     parser.add_argument('--summary-stats-files', required=True,  help = 'File(s) (already processed with munge_sumstats.py) where to apply partition LDscore, files should end with .sumstats.gz. If multiple files are used, need a comma-separated list.')
     parser.add_argument('--ldscores-prefix', required=True, help = 'Prefix for main-annot file.')
     parser.add_argument('--out', required=True, help = 'Path to save the results')
-
-    parser.add_argument("--verbose", help="increase output verbosity",
-                    action="store_true")
+    parser.add_argument("--verbose", help="increase output verbosity",action="store_true")
     parser.add_argument('--quantiles', type=int, default=5,required=False, help='If using a continuous annotation,the number of quantiles to split it into for regression.')
     parser.add_argument('--cont-breaks',type=str,required=False,help='Specific boundary points to split your continuous annotation on, comma separated list e.g. 0.1,0.4,0.5,0.6. ATTENTION: if you use negative values add a space in the beginning e.g. <space>-0.1,-0.4,0.5,0.6')
 
@@ -66,26 +64,7 @@ def run_magma(magma_gwas_resuts,out):
                             '--set-annot','/mnt/data/gene_list_for_magma',
                             '--out',out])
 
-def download_files(args,main_file,ss_list,prefix):
-
-    """Download files for downstream analyses"""
-
-    #Create folders
-    logging.info('Creating folders')
-    subprocess.call(['mkdir','/mnt/data/ss'])
-    subprocess.call(['mkdir','/mnt/data/tmp'])
-
-    # Download main annotations
-    logging.info('Downloading main annotation file(s):' + main_file)
-    subprocess.call(['gsutil','cp',main_file,'/mnt/data/'])
-
-    # Download summary stats
-    logging.info('Downloading summary statistic(s):' + ':'.join(ss_list))
-    for ss in ss_list:
-        subprocess.call(['gsutil','cp',ss,'/mnt/data/ss/'])
-
      
-
 def commonprefix(m):
 
     """Given a list of pathnames, returns the longest common leading component"""
@@ -134,17 +113,23 @@ def prepare_magma_continuous(args,noun):
 
     df = pd.read_csv("/mnt/data/"+ os.path.basename(args.main_annot), sep="\t", header=None)
 
-    if args.quantiles:
-        df["anno_break"] = pd.qcut(df[1], bins=args.quantiles)
+    df = pd.read_csv("/mnt/data/allclusters_all_annot_4m.txt", sep="\t", header=None)
 
-    else if args.cont_breaks:
+
+    if args.quantiles:
+        df["anno_break"] = pd.qcut(df[1], args.quantiles)
+        temp_breaks = pd.unique(df["anno_break"])
+        n_breaks = len(temp_breaks)
+        labs = [str(x).replace(", ","_").replace("(","").replace("]","").replace("[","") for x in temp_breaks]
+        logging.info('MAGMA: using the following breaks: '+ "; ".join([str(i) for i in labs]))
+
+    elif args.cont_breaks:
         max_vec = np.max(df[1])
         min_vec = np.min(df[1])
 
         quantiles_str=args.cont_breaks
         cut_breaks = [float(x) for x in quantiles_str.split(',')]
         name_breaks = list(cut_breaks)
-        logging.info('MAGMA: using the following breaks: '+ "; ".join([str(i) for i in name_breaks]))
 
         if np.all(cut_breaks <= max_vec):
             name_breaks.append(max_vec)
@@ -158,10 +143,12 @@ def prepare_magma_continuous(args,noun):
         cut_breaks.sort()
         n_breaks = len(cut_breaks)
 
-        name_breaks[0] = 'min'
-        name_breaks[-1] = 'max'
+        name_breaks[0] = str(min_vec)
+        name_breaks[-1] = str(max_vec)
         name_breaks = [str(x) for x in name_breaks]
         labs = [name_breaks[i]+'_'+name_breaks[i+1] for i in xrange(n_breaks-1)]
+        labs = labs[::-1]
+        logging.info('MAGMA: using the following breaks: '+ "; ".join([str(i) for i in labs]))
 
         df["anno_break"] = pd.cut(df[1], bins=cut_breaks, labels=labs)
 
@@ -175,7 +162,6 @@ def prepare_magma_continuous(args,noun):
         logging.info('Wrote geneset for MAGMA: /mnt/data/gene_list_for_magma_'+str(ind))
 
     download_magma()
-
 
 def run_magma(sumstat,phname):
 
@@ -215,13 +201,25 @@ if __name__ == "__main__":
     args = parse_args()
     main_file = args.main_annot
 
+    # Download main annotations
+    logging.info('Downloading main annotation file(s):' + main_file)
+    subprocess.call(['gsutil','cp',main_file,'/mnt/data/'])
+
     noun = type_of_file('/mnt/data/' + os.path.basename(main_file))
     logging.info('The type of file that will be used in the analysis: '+noun)
 
-    if noun == 'binary genelist' or noun == 'continuous genelist':    
+    if noun == 'binary genelist' or noun == 'continuous genelist':
+
+        # Download summary stats
         prefix = args.ldscores_prefix
         ss_list = args.summary_stats_files.split(',')
         logging.info('The summary statistic(s) to download: ' + ':'.join(ss_list))
+
+        logging.info('Downloading summary statistic(s):' + ':'.join(ss_list))
+        subprocess.call(['mkdir','/mnt/data/tmp'])
+        subprocess.call(['mkdir','/mnt/data/ss'])
+        for ss in ss_list:
+            subprocess.call(['gsutil','cp',ss,'/mnt/data/ss/'])
 
         # Summary statistics
         list_sumstats_file=glob.glob("/mnt/data/ss/*")
@@ -234,6 +232,7 @@ if __name__ == "__main__":
      
         # Run MAGMA
         for sumstats in list_sumstats_file:
+            phname = os.path.basename(sumstats).replace('.sumstats.gz','')
             run_magma(sumstats,phname)
 
         # Writing the results
