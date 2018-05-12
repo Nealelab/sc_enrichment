@@ -182,7 +182,7 @@ def run_magma(sumstat,phname):
         subprocess.call(['/home/magma',
                                 '--gene-results','/mnt/data/tmp/genes_for_magma_'+ phname + '.genes.raw',
                                 '--set-annot','/mnt/data/gene_list_for_magma',
-                                '--out','/mnt/data/magma_results_0' + phname])
+                                '--out','/mnt/data/magma_results_0_' + phname])
     elif n_magma_genefiles > 1:
         for quantvalue in range(n_magma_genefiles):
             subprocess.call(['/home/magma',
@@ -233,7 +233,7 @@ if __name__ == "__main__":
             run_magma(sumstats,phname)
 
         # Writing the results
-        subprocess.call(['gsutil','cp','/mnt/data/magma_results_*',os.path.join(args.out,"")])
+        subprocess.call(['gsutil','-m','cp','/mnt/data/magma_results_*',os.path.join(args.out,"")])
 
         logging.info('FINITO!')
     else:
