@@ -12,8 +12,8 @@ gsutil iam ch allUsers:objectViewer gs://artifacts.ldscore-data.appspot.com
 2. Prepare a tab-separated file containing the inputs for the `dsub` command. See an example in `/example/submit_list_example.tsv`.
 These fields are mandatories:
 ```
---env INPUT_SUMSTAT - File containing the gene list to calculate partition h2
---env INPUT_GENELIST - List of comma-separated files (already processed with munge_sumstats.py) where to apply partition LDscore, files should end with .sumstats.gz
+--env INPUT_GENELIST - File containing the gene list to calculate partition h2
+--env INPUT_SUMSTAT - List of comma-separated files (already processed with munge_sumstats.py) where to apply partition LDscore, files should end with .sumstats.gz
 --env PREFIX - Prefix for main annotation output
 --env OUT - Path to save the results
 ```
@@ -32,7 +32,7 @@ The code should look something like this:
   ```
   b) Call the `main.py` script, for example:
   ```
-  subprocess.call(['/home/sc_enrichement/sc_enrichement-master/main.py',
+  subprocess.call(['/home/sc_enrichement/sc_enrichement-master/main_ldscore.py',
                     '--main-annot',INPUT_GENELIST,
                     '--summary-stats-files',INPUT_SUMSTAT,
                     '--ldscores-prefix',PREFIX,
