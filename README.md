@@ -30,7 +30,7 @@ The code should look something like this:
   PREFIX = os.environ['PREFIX']
   OUT = os.environ['OUT']
   ```
-  b) Call the `main.py` script, for example:
+  b) Call the `main_ldscore.py` script, for example:
   ```
   subprocess.call(['/home/sc_enrichement/sc_enrichement-master/main_ldscore.py',
                     '--main-annot',INPUT_GENELIST,
