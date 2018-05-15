@@ -47,7 +47,7 @@ def parse_args():
 
     parser.add_argument("--verbose", help="increase output verbosity",
                     action="store_true")
-    parser.add_argument('--quantiles', type=int, default=5,required=False, help='If using a continuous annotation,the number of quantiles to split it into for regression.')
+    parser.add_argument('--quantiles', type=int, default=0,required=False, help='If using a continuous annotation,the number of quantiles to split it into for regression. Default is 0. Then the annotation is treated as continuous.')
     parser.add_argument('--cont-breaks',type=str,required=False,help='Specific boundary points to split your continuous annotation on, comma separated list e.g. 0.1,0.4,0.5,0.6. ATTENTION: if you use negative values add a space in the beginning e.g. <space>-0.1,-0.4,0.5,0.6')
 
     args = parser.parse_args()
@@ -200,6 +200,16 @@ def prepare_annotations(args,gene_list,outldscore,plink_panel,noun):
                             '--thin-annot',
                             '--out', outldscore + "." + str(chrom),
                             '--print-snps',"/mnt/data/list.txt"])
+        elif ('continuous' in noun and args.quantiles==0):
+            logging.debug('Running ldsc.py for chr ' + str(chrom) )
+            subprocess.call(['/home/ldscore/ldsc-kt_exclude_files/ldsc.py',
+                            '--l2',
+                            '--bfile',plink_panel + str(chrom),
+                            '--ld-wind-cm', "1",
+                            '--annot','/mnt/data/tmp/temp_dscore.' + str(chrom) + '.annot.gz',
+                            '--thin-annot',
+                            '--out', outldscore + "." + str(chrom),
+                            '--print-snps',"/mnt/data/list.txt"])
         elif (('continuous' in noun) and args.quantiles):
             try:
                 logging.debug('Running ldsc.py for chr ' + str(chrom) )
@@ -223,6 +233,7 @@ def prepare_annotations(args,gene_list,outldscore,plink_panel,noun):
                             '--cont-breaks',args.cont_breaks,
                             '--thin-annot',
                             '--out', outldscore + "." + str(chrom)])
+
       
 
 def commonprefix(m):
