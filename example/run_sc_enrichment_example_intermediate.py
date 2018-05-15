@@ -11,7 +11,7 @@ PREFIX = os.environ['PREFIX']
 OUTLDSCORE = os.environ['OUTLDSCORE'] # Where to save the ldscore generated from INPUT_GENELIST
 OUT = os.environ['OUT']
 
-subprocess.call(['/home/sc_enrichement/sc_enrichement-master/main.py',
+subprocess.call(['/home/sc_enrichement/sc_enrichement-master/main_ldscore.py',
                     '--main-annot',INPUT_GENELIST,
                     '--summary-stats-files',INPUT_SUMSTAT,
                     '--ldscores-prefix',PREFIX,

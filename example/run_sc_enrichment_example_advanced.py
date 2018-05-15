@@ -7,12 +7,11 @@ import os
 INPUT_GENELIST = os.environ['INPUT_GENELIST'] 
 INPUT_SUMSTAT = os.environ['INPUT_SUMSTAT']
 COND_ANNOT_FILE = os.environ['COND_ANNOT_FILE'] # List of files for conditioning
-COND_ANNOT_LDSCORE = os.environ['COND_ANNOT_LDSCORE'] # List of alredy-computed ldscores for conditioning
 PREFIX = os.environ['PREFIX']
 OUTLDSCORE = os.environ['OUTLDSCORE'] # Where to save the ldscore generated from INPUT_GENELIST
 OUT = os.environ['OUT']
 
-subprocess.call(['/home/sc_enrichement/sc_enrichement-master/main.py',
+subprocess.call(['/home/sc_enrichement/sc_enrichement-master/main_ldscore.py',
                     '--main-annot',INPUT_GENELIST,
                     '--summary-stats-files',INPUT_SUMSTAT,
                     '--ldscores-prefix',PREFIX,
