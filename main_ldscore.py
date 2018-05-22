@@ -169,7 +169,7 @@ def prepare_annotations_bed(args,bed_file,plink_panel):
 
     for chrom in range(1, 23):
         logging.debug('Running genesets_to_ldscores.py for chr ' + str(chrom) + ' and bed-file ' + str(gene_list))
-        subprocess.call(['/home/sc_enrichement/sc_enrichment-master/genesets_to_ldscores.py',
+        subprocess.call(['/home/sc_enrichment/sc_enrichment-master/genesets_to_ldscores.py',
                         '--bed-file',bed_file,
                         '--gene-coord-file',"/mnt/data/GENENAME_gene_annot.txt",
                         '--bfile-chr',plink_panel,
@@ -184,7 +184,7 @@ def prepare_annotations_genes(args,gene_list,plink_panel):
 
     for chrom in range(1, 23):
         logging.debug('Running genesets_to_ldscores.py for chr ' + str(chrom) + ' and geneset-file ' + str(gene_list))
-        subprocess.call(['/home/sc_enrichement/sc_enrichment-master/genesets_to_ldscores.py',
+        subprocess.call(['/home/sc_enrichment/sc_enrichment-master/genesets_to_ldscores.py',
                         '--geneset-file',gene_list,
                         '--chrom',str(chrom),
                         '--gene-coord-file',"/mnt/data/GENENAME_gene_annot.txt",
@@ -200,7 +200,7 @@ def prepare_annotations_rsids(args,gene_list,plink_panel):
     for chrom in range(1, 23):
 
         logging.debug('Running genesets_to_ldscores.py for chr ' + str(chrom) + ' and rsid-file ' + str(gene_list))
-        subprocess.call(['/home/sc_enrichement/sc_enrichment-master/genesets_to_ldscores.py',
+        subprocess.call(['/home/sc_enrichment/sc_enrichment-master/genesets_to_ldscores.py',
                         '--rsid-file',gene_list,
                         '--gene-coord-file',"/mnt/data/GENENAME_gene_annot.txt",
                         '--bfile-chr',plink_panel,
