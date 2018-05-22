@@ -1,24 +1,20 @@
 # sc_enrichement
-Cloud-based single-cell enrichment analysis
 
-1. Build a docker, this has already been done and available at `gcr.io/ldscore-data/ldscore`
-```
-docker build --no-cache -t gcr.io/ldscore-data/ldscore .
-gcloud docker -- push gcr.io/ldscore-data/ldscore
-# We made it publically available
-gsutil iam ch allUsers:objectViewer gs://artifacts.ldscore-data.appspot.com
-```
+How to use it
 
-2. Prepare a tab-separated file containing the inputs for the `dsub` command. See an example in `/example/submit_list_example.tsv`.
+Input Possibilities:
+
+
+1. Prepare a tab-separated file containing the inputs for the `dsub` command. See an example in `/example/submit_list_example.tsv`.
 These fields are mandatories:
 ```
---env INPUT_GENELIST - File containing the gene list to calculate partition h2
+--env INPUT_GENELIST - Path to either a gene list or list of rsids which can have a second column with a continuous annotation, in which case ldscores will be calculated, OR to a folder with ldscores to use in the regression.
 --env INPUT_SUMSTAT - List of comma-separated files (already processed with munge_sumstats.py) where to apply partition LDscore, files should end with .sumstats.gz
---env PREFIX - Prefix for main annotation output
---env OUT - Path to save the results
+--env PREFIX - Prefix for the ldscores files that will be created and the results file from the regression.
+--env OUT - Path to save the regression results
 ```
 
-3. Build a `.py` command to run the analysis. One example is provided in `example/run_sc_enrichment_example.py`
+2. Build a `.py` command to run the analysis. One example is provided in `example/run_sc_enrichment_example.py`
 
 The code should look something like this:
 
@@ -43,10 +39,10 @@ The code should look something like this:
 There are many other options that can be used. For another example check `example/run_sc_enrichment_example_advanced.py`.
 
 
-4. Install `dsub` if you have not done yet
+3. Install `dsub` if you have not done yet
 ```pip install dsub```
 
-5. Run `dsub` command, similar to this:
+4. Run `dsub` command, similar to this:
 
 ```
 dsub \
