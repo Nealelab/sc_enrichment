@@ -20,7 +20,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--main-annot-genes',  help = 'Path to file with a list of genes to run as your annotation.This can also have an additional column for continuous annotations.')
-    parser.add_argument('--condition-annot-genes', help = 'Path to file with a list of genes to run as a conditional annotation. This can also have an additional column for continuous annotations, but would not be considered.')
+    parser.add_argument('--condition-annot-genes', help = 'Path to file with a list of genes to run as a conditional annotation. You can specify multiple comma-separated files. These files have two format: 1) simple gene list 2) genelist + annotation columns. In the latter all the annotation columns will be used for conditional analysis.')
     parser.add_argument('--summary-stats-files', required=True,  help = 'File(s) (already processed with munge_sumstats.py) where to apply partition LDscore, files should end with .sumstats.gz. If multiple files are used, need a comma-separated list.')
     parser.add_argument('--prefix', required=True, help = 'Prefix for main-annot file.')
     parser.add_argument('--out', required=True, help = 'Path to save the results')
@@ -162,7 +162,6 @@ def process_conditional_genesets(cond_file,prefix_cond):
 
     """ Download, process and save conditional genesets """
 
-    subprocess.call(['gsutil','cp',cond_file,'/mnt/data/conditional_genesets/'])
     with open("/mnt/data/conditional_genesets/"+ os.path.basename(cond_file)) as input:
         content = input.read().splitlines()
     content.insert(0,prefix_cond)
@@ -179,11 +178,11 @@ def combine_conditional_genesets():
     all_cond_gene_lists = glob.glob("/mnt/data/conditional_gene_list_for_magma_*")
     to_cat = ' '.join(all_cond_gene_lists)
     for file in all_gene_lists:
-        os.system('awk 1 ' + file + ' ' + to_cat + ' > ' + file+'_cond')
+        os.system('awk 1 ' + file + ' ' + to_cat + ' > ' +  os.path.dirname(file)+'/cond_'+ os.path.basename(file))
 
     
 
-def run_magma(args,sumstat,phname,prefix_cond):
+def run_magma(args,sumstat,phname,prefix_cond_string_dicot,prefix_cond_string_cont,ncol):
 
     """ Run MAGMA analysis for each sumistat and given the geneset """
 
@@ -200,28 +199,65 @@ def run_magma(args,sumstat,phname,prefix_cond):
                             '--gene-annot','/mnt/data/magma_annotation_1000g_h37.genes.annot',
                             '--out','/mnt/data/tmp/genes_for_magma_'+ phname])
 
-
- 
     n_magma_genefiles=len(glob.glob('/mnt/data/gene_list_for_magma*'))
+
     if n_magma_genefiles==1:
-        if args.condition_annot_genes:
+
+        if args.condition_annot_genes and len(prefix_cond_string_dicot)>0 and len(prefix_cond_string_cont)>0:
             subprocess.call(['/home/magma',
                                 '--gene-results','/mnt/data/tmp/genes_for_magma_'+ phname + '.genes.raw',
-                                '--set-annot','/mnt/data/gene_list_for_magma_cond',
-                                'condition='+ prefix_cond,
+                                '--set-annot','/mnt/data/cond_gene_list_for_magma',
+                                'condition='+ prefix_cond_string_dicot,
+                                '--gene-covar',prefix_cond_string_cont,
+                                'condition=' + ncol_out,
+                                '--out','/mnt/data/magma_results_0_' + phname])
+
+        elif args.condition_annot_genes and len(prefix_cond_string_dicot)>0:
+            subprocess.call(['/home/magma',
+                                '--gene-results','/mnt/data/tmp/genes_for_magma_'+ phname + '.genes.raw',
+                                '--set-annot','/mnt/data/cond_gene_list_for_magma',
+                                'condition='+ prefix_cond_string_dicot,
+                                '--out','/mnt/data/magma_results_0_' + phname])
+
+        elif args.condition_annot_genes and len(prefix_cond_string_cont)>0:
+            subprocess.call(['/home/magma',
+                                '--gene-results','/mnt/data/tmp/genes_for_magma_'+ phname + '.genes.raw',
+                                '--set-annot','/mnt/data/gene_list_for_magma',
+                                '--gene-covar',prefix_cond_string_cont,
+                                'condition=' + ncol_out,
                                 '--out','/mnt/data/magma_results_0_' + phname])
         else:
             subprocess.call(['/home/magma',
                                 '--gene-results','/mnt/data/tmp/genes_for_magma_'+ phname + '.genes.raw',
                                 '--set-annot','/mnt/data/gene_list_for_magma',
                                 '--out','/mnt/data/magma_results_0_' + phname])
+
     elif n_magma_genefiles > 1:
+
         for quantvalue in range(n_magma_genefiles):
-            if args.condition_annot_genes:
+
+            if args.condition_annot_genes and len(prefix_cond_string_dicot)>0 and len(prefix_cond_string_cont)>0:
                 subprocess.call(['/home/magma',
                                 '--gene-results','/mnt/data/tmp/genes_for_magma_'+ phname + '.genes.raw',
-                                '--set-annot','/mnt/data/gene_list_for_magma_' + str(quantvalue) + '_cond',
-                                'condition='+ prefix_cond,
+                                '--set-annot','/mnt/data/cond_gene_list_for_magma_' + str(quantvalue),
+                                'condition='+ prefix_cond_string_dicot,
+                                '--gene-covar',prefix_cond_string_cont,
+                                'condition=' + ncol_out,
+                                '--out','/mnt/data/magma_results_' + str(quantvalue) + "_" + phname])
+
+            elif args.condition_annot_genes and len(prefix_cond_string_dicot)>0:
+                subprocess.call(['/home/magma',
+                                '--gene-results','/mnt/data/tmp/genes_for_magma_'+ phname + '.genes.raw',
+                                '--set-annot','/mnt/data/cond_gene_list_for_magma_' + str(quantvalue),
+                                'condition='+ prefix_cond_string_dicot,
+                                '--out','/mnt/data/magma_results_' + str(quantvalue) + "_" + phname])
+
+            elif args.condition_annot_genes and len(prefix_cond_string_cont)>0:
+                subprocess.call(['/home/magma',
+                                '--gene-results','/mnt/data/tmp/genes_for_magma_'+ phname + '.genes.raw',
+                                '--set-annot','/mnt/data/gene_list_for_magma_' + str(quantvalue),
+                                '--gene-covar',prefix_cond_string_cont,
+                                'condition=' + ncol_out,
                                 '--out','/mnt/data/magma_results_' + str(quantvalue) + "_" + phname])
             else:
                 subprocess.call(['/home/magma',
@@ -230,8 +266,6 @@ def run_magma(args,sumstat,phname,prefix_cond):
                                 '--out','/mnt/data/magma_results_' + str(quantvalue) + "_" + phname])
 
     logging.info('MAGMA file generated: '+ '/mnt/data/magma_results_' + phname)
-
-
 
 
 
@@ -271,21 +305,44 @@ if __name__ == "__main__":
 
     # Download and prepare additional geneset for conditioning (if they are specified)
     # And attached them to the output from prepare_magma_*
-    prefix_cond_string=[]
+    prefix_cond_string_dicot=[]
+    prefix_cond_string_cont=[]
+    ncol_out=None
     if args.condition_annot_genes:
         subprocess.call(['mkdir','/mnt/data/conditional_genesets'])
         cond_files = args.condition_annot_genes.split(',')
+        counter = 0
         for k in cond_files:
+            # Download
+            subprocess.call(['gsutil','cp',k,'/mnt/data/conditional_genesets/'])
+            # Get prefix
             prefix_cond = os.path.splitext(os.path.basename(k))[0]
-            process_conditional_genesets(k,prefix_cond)
-            prefix_cond_string.append(prefix_cond)
-        prefix_cond_string = ','.join(prefix_cond_string)
-        combine_conditional_genesets()
+            # Get if file is continuous or not
+            noun_cond = type_of_file('/mnt/data/conditional_genesets/' + os.path.basename(k))
+            if noun_cond == 'binary':
+                process_conditional_genesets(k,prefix_cond)
+                prefix_cond_string_dicot.append(prefix_cond)
+            if noun_cond == 'continuous':
+                counter = counter + 1
+                if counter > 1:
+                    raise ValueError("No more than 1 continous conditional annotation is allowed")    
+                local_file_name='/mnt/data/conditional_genesets/' + os.path.basename(k)
+                prefix_cond_string_cont=local_file_name
+                ncol=pd.read_csv(local_file_name,delim_whitespace=True,header=None).shape[1]
+                ncol_out=','.join([str(x+1) for x in range(ncol-1)])
+                logging.info('Continous genesets for adjustment: ' + os.path.basename(prefix_cond_string_cont))
+
+        if prefix_cond_string_dicot:
+            prefix_cond_string_dicot = ','.join(prefix_cond_string_dicot)
+            logging.info('Binary genesets for adjustment: ' + prefix_cond_string_dicot)
+            combine_conditional_genesets()
+        
+        
  
     # Run MAGMA
     for sumstats in list_sumstats_file:
         phname = os.path.basename(sumstats).replace('.sumstats.gz','')
-        run_magma(args,sumstats,phname,prefix_cond_string)
+        run_magma(args,sumstats,phname,prefix_cond_string_dicot,prefix_cond_string_cont,ncol_out)
 
     # Writing the results
     subprocess.call(['gsutil','-m','cp','/mnt/data/magma_results_*',os.path.join(args.out,"")])
