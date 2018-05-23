@@ -88,11 +88,11 @@ def make_annot_files(args,df,binary):
         df_annot = df_annot[['ANNOT']].astype(float)
         df_bim['ANNOT'] = df_annot[['ANNOT']]
         cont_annot = df_bim[['SNP','ANNOT']]
-        cont_annot_file = args.ldscores_prefix+'.'+str(args.chrom)+'.cont_bin.gz'
+        cont_annot_file = args.prefix+'.'+str(args.chrom)+'.cont_bin.gz'
         with gzip.open(cont_annot_file,'wb') as f:
             cont_annot.to_csv(f,sep="\t",index=False,header=None)
     
-    annot_file = args.ldscores_prefix+'.'+str(args.chrom)+'.annot.gz' 
+    annot_file = args.prefix+'.'+str(args.chrom)+'.annot.gz' 
     with gzip.open(annot_file, 'wb') as f:
         df_annot.to_csv(f, sep = "\t", index = False)
 
@@ -104,7 +104,7 @@ if __name__ == '__main__':
     parser.add_argument('--bed-file',type=str, help='the UCSC bed file with the regions that make up your annotation')
     parser.add_argument('--gene-coord-file', help = 'location of the file mapping genes to positions')
     parser.add_argument('--bfile-chr', help = 'plink file for creating annot')
-    parser.add_argument('--ldscores-prefix', help = 'path and prefix of the ldscore')
+    parser.add_argument('--prefix', help = 'path and prefix of the ldscore')
     parser.add_argument('--chrom',type=int,help='chromosome')
     parser.add_argument('--windowsize', type=int, default=100000, help = 'size of the window around the gene')
     parser.add_argument('--dont-make-ldscores', action='store_true', default=False)

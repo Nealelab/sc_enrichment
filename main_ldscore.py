@@ -30,7 +30,7 @@ def parse_args():
     parser.add_argument('--just-ldscores',help='Use this flag if you only want to calculate LD-Scores and don\'t need to run a regression. Must be used with --export-ldscore-path')
 
     parser.add_argument('--summary-stats-files', required=True,  help = 'File(s) (already processed with munge_sumstats.py) where to apply partition LDscore, files should end with .sumstats.gz. If multiple files are used, need a comma-separated list.')
-    parser.add_argument('--ldscores-prefix', required=True, help = 'Prefix that will be used for the ldscore files and the regression output files.')
+    parser.add_argument('--prefix', required=True, help = 'Prefix that will be used for the ldscore files and the regression output files.')
     parser.add_argument('--out', required=True, help = 'Path to save the regression results.')
     parser.add_argument('--export-ldscore-path', help = 'Path to export the LDscores generated from --main-annot-rsids/genes/bed')
     parser.add_argument('--no_baseline', action='store_true', default=False, help = 'Do not condition on baseline annotations')
@@ -53,11 +53,11 @@ def parse_args():
 
     args = parser.parse_args()
     if not args.just_ldscores:
-        if not ((args.main_annot_genes or args.main_annot_rsids or args.main_annot_ldscores or args.main_annot_bed) or args.summary_stats_files or args.ldscores_prefix or args.out):
-            parser.error("You have to specify --main-annot-* and --summary-stats-files and --ldscores-prefix and --out")
+        if not ((args.main_annot_genes or args.main_annot_rsids or args.main_annot_ldscores or args.main_annot_bed) or args.summary_stats_files or args.prefix or args.out):
+            parser.error("You have to specify --main-annot-* and --summary-stats-files and --prefix and --out")
     else:
-        if not ((args.main_annot_genes or args.main_annot_rsids or args.main_annot_ldscores or args.main_annot_bed) or args.ldscores_prefix or args.export_ldscore_path):
-            parser.error("You have to specify --main-annot-* and --ldscores-prefix and --export-ldscore-path")
+        if not ((args.main_annot_genes or args.main_annot_rsids or args.main_annot_ldscores or args.main_annot_bed) or args.prefix or args.export_ldscore_path):
+            parser.error("You have to specify --main-annot-* and --prefix and --export-ldscore-path")
 
     if (args.cont_breaks):
         args.quantiles = None
@@ -169,11 +169,11 @@ def prepare_annotations_bed(args,bed_file,plink_panel):
 
     for chrom in range(1, 23):
         logging.debug('Running genesets_to_ldscores.py for chr ' + str(chrom) + ' and bed-file ' + str(gene_list))
-        subprocess.call(['/home/sc_enrichement/sc_enrichment-master/genesets_to_ldscores.py',
+        subprocess.call(['/home/sc_enrichment/sc_enrichment-master/genesets_to_ldscores.py',
                         '--bed-file',bed_file,
                         '--gene-coord-file',"/mnt/data/GENENAME_gene_annot.txt",
                         '--bfile-chr',plink_panel,
-                        '--ldscores-prefix','/mnt/data/tmp/temp_dscore',
+                        '--prefix','/mnt/data/tmp/temp_dscore',
                         '--windowsize',str(args.windowsize),
                         '--gene-col-name', str(args.gene_col_name),
                         '--chrom', str(chrom)])
@@ -184,12 +184,12 @@ def prepare_annotations_genes(args,gene_list,plink_panel):
 
     for chrom in range(1, 23):
         logging.debug('Running genesets_to_ldscores.py for chr ' + str(chrom) + ' and geneset-file ' + str(gene_list))
-        subprocess.call(['/home/sc_enrichement/sc_enrichment-master/genesets_to_ldscores.py',
+        subprocess.call(['/home/sc_enrichment/sc_enrichment-master/genesets_to_ldscores.py',
                         '--geneset-file',gene_list,
                         '--chrom',str(chrom),
                         '--gene-coord-file',"/mnt/data/GENENAME_gene_annot.txt",
                         '--bfile-chr',plink_panel,
-                        '--ldscores-prefix',"/mnt/data/tmp/temp_dscore",
+                        '--prefix',"/mnt/data/tmp/temp_dscore",
                         '--windowsize',str(args.windowsize),
                         '--gene-col-name', str(args.gene_col_name)])
 
@@ -200,11 +200,11 @@ def prepare_annotations_rsids(args,gene_list,plink_panel):
     for chrom in range(1, 23):
 
         logging.debug('Running genesets_to_ldscores.py for chr ' + str(chrom) + ' and rsid-file ' + str(gene_list))
-        subprocess.call(['/home/sc_enrichement/sc_enrichment-master/genesets_to_ldscores.py',
+        subprocess.call(['/home/sc_enrichment/sc_enrichment-master/genesets_to_ldscores.py',
                         '--rsid-file',gene_list,
                         '--gene-coord-file',"/mnt/data/GENENAME_gene_annot.txt",
                         '--bfile-chr',plink_panel,
-                        '--ldscores-prefix','/mnt/data/tmp/temp_dscore',
+                        '--prefix','/mnt/data/tmp/temp_dscore',
                         '--windowsize',str(args.windowsize),
                         '--gene-col-name', str(args.gene_col_name),
                         '--chrom', str(chrom)])      
@@ -321,7 +321,7 @@ if __name__ == "__main__":
     if args.main_annot_ldscores:
         main_file = args.main_annot_ldscores        
 
-    prefix = args.ldscores_prefix
+    prefix = args.prefix
     ss_list = args.summary_stats_files.split(',')
     
 
