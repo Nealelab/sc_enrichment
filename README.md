@@ -70,10 +70,12 @@ e.g if your --gene-coord-file is headed as such: ENTREZ CHR START END you would 
 1. Prepare a tab-separated file containing the inputs for the `dsub` command. See an example in `/example/submit_list_example.tsv`. These environmental variables are then read in by the script called by `dsub` as explained below.
 These fields are mandatories:
 ```
---env INPUT_MAIN - This will provide your main annotation, can be path to gene list, rsids, ldscore folder or bed file. In this example it
-                   is a gene list.
---env INPUT_SUMSTAT - List of comma-separated files (already processed with munge_sumstats.py) where to apply partition LDscore.
---env PREFIX - Prefix for the ldscores files that will be created and the results file from the regression.
+--env INPUT_MAIN - This will provide your main annotation, can be path to gene list, rsids,
+                   ldscore folder or bed file. In this example it is a gene list.
+--env INPUT_SUMSTAT - List of comma-separated files (already processed with munge_sumstats.py) 
+                      where to apply partition LDscore.
+--env PREFIX - Prefix for the ldscores files that will be created and the results file 
+               from the regression.
 --env OUT - Path to save the regression results
 ```
 
@@ -94,7 +96,7 @@ The code should look something like this:
   subprocess.call(['/home/sc_enrichement/sc_enrichement-master/main_ldscore.py',
                     '--main-annot-genes',INPUT_MAIN,
                     '--summary-stats-files',INPUT_SUMSTAT,
-                    '--ldscores-prefix',PREFIX,
+                    '--prefix',PREFIX,
                     '--out',OUT,
                     '--verbose'])
   ```
