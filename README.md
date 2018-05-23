@@ -1,15 +1,54 @@
 # sc_enrichement
 
-How to use it
+This is a cloud-based pipeline that uses the job submission tool [dsub](https://github.com/DataBiosphere/dsub) to run stratified LD-Score Regression [Finucane,Bulik-Sullivan et al. bioxiv](https://www.biorxiv.org/content/early/2015/01/23/014241) and [MAGMA](http://journals.plos.org/ploscompbiol/article?id=10.1371%2Fjournal.pcbi.1004219) in a parallelized way.
 
-Input Possibilities:
+Flags for ```main_ldscore.py```:
+```
+#--main-annot-genes 
+##This flag accepts as input a list of genes over which you want to partition heritability. This gene list will be converted into
+a per snp annotation. The file can have a single column indicating it will be a binary annotation or contain a secondary column
+that is a quantitative annotation for each gene. 
+
+#--main-annot-rsids
+##This flag accepts as input a list of rsids over which you want to partition heritability. The file can have a single column indicating it will be a binary annotation or contain a secondary column that is a quantitative annotation for each SNP.
+
+#--main-annot-ldscores
+##This flag accepts a path to a folder that contains pre-calculated ldscores for an annotation. This ldscores will be run directly into the
+regression portion of the pipeline to produce partitioned heritability results.
+
+#--main-annot-bed
+##This flag accepts a file that is in UCSC bed file format for regions over which you want to partition heritability. There can be a 4th column that is a continuous annotation.
+
+#--condition-annot-genes/--condition-annot-rsids/--condition-annot-ldscores/--condition-annot-bed
+##These flags work the same as the --main-annot-* flags but are used when you want to condition the regression on another annotation.
+
+#--just-ldscores
+##This flag allows you to just calculate ldscores for a particular annotation. If given, this flag will prevent any regression from being run.
+
+#--sumary-stats-files
+##A comma separated list of summary statistics files ending in .sumstats.gz that have already been processed using munge_sumstats.py.
+
+#--prefix
+##Prefix that will be used when naming ldscore files and regression output files.
+
+#--out
+##Path to folder to save regression results to.
+
+#--export-ldscore-path
+##Path to folder to save ldscores to. If given this flag will copy the ldscores to the path, if not ldscore files will not be written out.
+
+#--gene-coord-file
+##Path to file that has gene coordinates. Format is GENE CHR START END including the header. If not using the default (ENSGID based) file, you need
+to include --gene-col-name flag to indicate what the first column of your --gene-coord-file is called. e.g if your --gene-coord-file is headed as such: ENTREZ CHR START END you would indicate --gene-col-name ENTREZ
+```
 
 
-1. Prepare a tab-separated file containing the inputs for the `dsub` command. See an example in `/example/submit_list_example.tsv`.
+1. Prepare a tab-separated file containing the inputs for the `dsub` command. See an example in `/example/submit_list_example.tsv`. These environmental variables are then read in by the script called by `dsub` as explained below.
 These fields are mandatories:
 ```
---env INPUT_GENELIST - Path to either a gene list or list of rsids which can have a second column with a continuous annotation, in which case ldscores will be calculated, OR to a folder with ldscores to use in the regression.
---env INPUT_SUMSTAT - List of comma-separated files (already processed with munge_sumstats.py) where to apply partition LDscore, files should end with .sumstats.gz
+--env INPUT_MAIN - This will provide your main annotation, can be path to gene list, rsids, ldscore folder or bed file. In this example it
+                   is a gene list.
+--env INPUT_SUMSTAT - List of comma-separated files (already processed with munge_sumstats.py) where to apply partition LDscore.
 --env PREFIX - Prefix for the ldscores files that will be created and the results file from the regression.
 --env OUT - Path to save the regression results
 ```
@@ -21,7 +60,7 @@ The code should look something like this:
   a) Assign the enviromental variables defined in the file created in step 2.
 
   ```
-  INPUT_GENELIST = os.environ['INPUT_GENELIST']
+  INPUT_MAIN = os.environ['INPUT_MAIN']
   INPUT_SUMSTAT = os.environ['INPUT_SUMSTAT']
   PREFIX = os.environ['PREFIX']
   OUT = os.environ['OUT']
@@ -29,7 +68,7 @@ The code should look something like this:
   b) Call the `main_ldscore.py` script, for example:
   ```
   subprocess.call(['/home/sc_enrichement/sc_enrichement-master/main_ldscore.py',
-                    '--main-annot',INPUT_GENELIST,
+                    '--main-annot-genes',INPUT_MAIN,
                     '--summary-stats-files',INPUT_SUMSTAT,
                     '--ldscores-prefix',PREFIX,
                     '--out',OUT,
