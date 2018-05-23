@@ -6,42 +6,64 @@ Flags for ```main_ldscore.py```:
 
 ```
 --main-annot-genes 
-This flag accepts as input a list of genes over which you want to partition heritability. This gene list will be converted into
-a per snp annotation. The file can have a single column indicating it will be a binary annotation or contain a secondary column
-that is a quantitative annotation for each gene. 
+This flag accepts as input a list of genes over which you want to partition heritability.
+This gene list will be converted into a per snp annotation. The file can have a single 
+column indicating it will be a binary annotation or contain a secondary column that 
+is a quantitative annotation for each gene. 
 ```
 ```
 --main-annot-rsids
-This flag accepts as input a list of rsids over which you want to partition heritability. The file can have a single column indicating it will be a binary annotation or contain a secondary column that is a quantitative annotation for each SNP.
+This flag accepts as input a list of rsids over which you want to partition heritability.
+The file can have a single column indicating it will be a binary annotation or contain a
+secondary column that is a quantitative annotation for each SNP.
 ```
-#--main-annot-ldscores
-##This flag accepts a path to a folder that contains pre-calculated ldscores for an annotation. This ldscores will be run directly into the
-regression portion of the pipeline to produce partitioned heritability results.
-
-#--main-annot-bed
-##This flag accepts a file that is in UCSC bed file format for regions over which you want to partition heritability. There can be a 4th column that is a continuous annotation.
-
-#--condition-annot-genes/--condition-annot-rsids/--condition-annot-ldscores/--condition-annot-bed
-##These flags work the same as the --main-annot-* flags but are used when you want to condition the regression on another annotation.
-
-#--just-ldscores
-##This flag allows you to just calculate ldscores for a particular annotation. If given, this flag will prevent any regression from being run.
-
-#--sumary-stats-files
-##A comma separated list of summary statistics files ending in .sumstats.gz that have already been processed using munge_sumstats.py.
-
-#--prefix
-##Prefix that will be used when naming ldscore files and regression output files.
-
-#--out
-##Path to folder to save regression results to.
-
-#--export-ldscore-path
-##Path to folder to save ldscores to. If given this flag will copy the ldscores to the path, if not ldscore files will not be written out.
-
-#--gene-coord-file
-##Path to file that has gene coordinates. Format is GENE CHR START END including the header. If not using the default (ENSGID based) file, you need
-to include --gene-col-name flag to indicate what the first column of your --gene-coord-file is called. e.g if your --gene-coord-file is headed as such: ENTREZ CHR START END you would indicate --gene-col-name ENTREZ
+```
+--main-annot-ldscores
+This flag accepts a path to a folder that contains pre-calculated ldscores for an 
+annotation. This ldscores will be run directly into the regression portion of the
+pipeline to produce partitioned heritability results.
+```
+```
+--main-annot-bed
+This flag accepts a file that is in UCSC bed file format for regions over which 
+you want to partition heritability. There can be a 4th column that is a continuous
+annotation.
+```
+```
+--condition-annot-genes/--condition-annot-rsids/--condition-annot-ldscores/--condition-annot-bed
+These flags work the same as the --main-annot-* flags but are used when you want 
+to condition the regression on another annotation.
+```
+```
+--just-ldscores
+This flag allows you to just calculate ldscores for a particular annotation. 
+If given, this flag will prevent any regression from being run.
+```
+```
+--sumary-stats-files
+A comma separated list of summary statistics files ending in .sumstats.gz that 
+have already been processed using munge_sumstats.py.
+```
+```
+--prefix
+Prefix that will be used when naming ldscore files and regression output files.
+```
+```
+--out
+Path to folder to save regression results to.
+```
+```
+--export-ldscore-path
+Path to folder to save ldscores to. If given this flag will copy the ldscores to 
+the path, if not ldscore files will not be written out.
+```
+```
+--gene-coord-file
+Path to file that has gene coordinates. Format is GENE CHR START END including the header.
+If not using the default (ENSGID based) file, you need to include --gene-col-name flag 
+to indicate what the first column of your --gene-coord-file is called. 
+e.g if your --gene-coord-file is headed as such: ENTREZ CHR START END you would indicate
+ --gene-col-name ENTREZ
 ```
 
 
