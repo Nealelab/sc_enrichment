@@ -3,15 +3,17 @@
 This is a cloud-based pipeline that uses the job submission tool [dsub](https://github.com/DataBiosphere/dsub) to run stratified LD-Score Regression [Finucane,Bulik-Sullivan et al. bioxiv](https://www.biorxiv.org/content/early/2015/01/23/014241) and [MAGMA](http://journals.plos.org/ploscompbiol/article?id=10.1371%2Fjournal.pcbi.1004219) in a parallelized way.
 
 Flags for ```main_ldscore.py```:
+
 ```
-#--main-annot-genes 
-##This flag accepts as input a list of genes over which you want to partition heritability. This gene list will be converted into
+--main-annot-genes 
+This flag accepts as input a list of genes over which you want to partition heritability. This gene list will be converted into
 a per snp annotation. The file can have a single column indicating it will be a binary annotation or contain a secondary column
 that is a quantitative annotation for each gene. 
-
-#--main-annot-rsids
-##This flag accepts as input a list of rsids over which you want to partition heritability. The file can have a single column indicating it will be a binary annotation or contain a secondary column that is a quantitative annotation for each SNP.
-
+```
+```
+--main-annot-rsids
+This flag accepts as input a list of rsids over which you want to partition heritability. The file can have a single column indicating it will be a binary annotation or contain a secondary column that is a quantitative annotation for each SNP.
+```
 #--main-annot-ldscores
 ##This flag accepts a path to a folder that contains pre-calculated ldscores for an annotation. This ldscores will be run directly into the
 regression portion of the pipeline to produce partitioned heritability results.
