@@ -79,6 +79,11 @@ These fields are mandatories:
 --env OUT - Path to save the regression results
 ```
 
+Example:
+```
+--env INPUT_MAIN    --env INPUT_SUMSTAT    --env PREFIX    -env OUT
+gs://singlecellldscore/example/example.geneset    gs://singlecellldscore/example/asd_summary_stats.sumstats.gz,gs://singlecellldscore/example/scz_summary_stats.sumstats.gz    example    gs://singlecellldscore/example/    
+```
 2. Build a `.py` command to run the analysis. One example is provided in `example/run_sc_enrichment_example.py`
 
 The code should look something like this:
