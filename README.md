@@ -1,6 +1,6 @@
 # sc_enrichement
 
-This is a cloud-based pipeline that uses the job submission tool [dsub](https://github.com/DataBiosphere/dsub) to run stratified LD-Score Regression [Finucane,Bulik-Sullivan et al. bioxiv](https://www.biorxiv.org/content/early/2015/01/23/014241) and [MAGMA](http://journals.plos.org/ploscompbiol/article?id=10.1371%2Fjournal.pcbi.1004219) in a parallelized way.
+This is a cloud-based pipeline that uses the job submission tool [dsub](https://github.com/DataBiosphere/dsub) to run [stratified LD-Score Regression](https://www.biorxiv.org/content/early/2015/01/23/014241) and [MAGMA](http://journals.plos.org/ploscompbiol/article?id=10.1371%2Fjournal.pcbi.1004219)in a parallelized way. The pipeline is split into two scripts, main_ldscore.py and main_magma.py. 
 
 Flags for ```main_ldscore.py```:
 
