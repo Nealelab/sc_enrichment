@@ -1,6 +1,6 @@
 # sc_enrichement
 
-This is a cloud-based pipeline that uses the job submission tool [dsub](https://github.com/DataBiosphere/dsub) to run [stratified LD-Score Regression](https://www.biorxiv.org/content/early/2015/01/23/014241) and [MAGMA](http://journals.plos.org/ploscompbiol/article?id=10.1371%2Fjournal.pcbi.1004219)in a parallelized way. The pipeline is split into two scripts, main_ldscore.py and main_magma.py. 
+This is a cloud-based pipeline that uses the job submission tool [dsub](https://github.com/DataBiosphere/dsub) to run [stratified LD-Score Regression](https://www.biorxiv.org/content/early/2015/01/23/014241) and [MAGMA](http://journals.plos.org/ploscompbiol/article?id=10.1371%2Fjournal.pcbi.1004219) in a parallelized way. The pipeline is split into two scripts, main_ldscore.py and main_magma.py. 
 
 Flags for ```main_ldscore.py```:
 
@@ -66,6 +66,7 @@ e.g if your --gene-coord-file is headed as such: ENTREZ CHR START END you would 
  --gene-col-name ENTREZ
 ```
 
+Steps to run the pipeline:
 
 1. Prepare a tab-separated file containing the inputs for the `dsub` command. See an example in `/example/submit_list_example.tsv`. These environmental variables are then read in by the script called by `dsub` as explained below.
 These fields are mandatories:
