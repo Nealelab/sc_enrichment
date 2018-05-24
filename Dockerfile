@@ -20,8 +20,8 @@ RUN	mkdir -p /home/ldscore/ && \
     unzip -q /home/ldscore/kt_exclude_files.zip -d /home/ldscore
 
 RUN	mkdir -p /home/sc_enrichement/ && \
-	wget --quiet -P /home/sc_enrichement/ https://github.com/Nealelab/sc_enrichement/archive/master.zip && \
-    unzip -q /home/sc_enrichement/master.zip -d /home/sc_enrichement
+	wget --quiet -P /home/sc_enrichment/ https://github.com/Nealelab/sc_enrichment/archive/master.zip && \
+    unzip -q /home/sc_enrichment/master.zip -d /home/sc_enrichment
 
 VOLUME ["/root/.config"]
 
