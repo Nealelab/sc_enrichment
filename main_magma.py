@@ -186,7 +186,7 @@ def run_magma(args,sumstat,phname,prefix_cond_string_dicot,prefix_cond_string_co
 
     """ Run MAGMA analysis for each sumistat and given the geneset """
 
-    df = pd.read_csv(sumstat, compression='gzip', header=0, sep='\t')
+    df = pd.read_csv(sumstat, compression='gzip', header=0, delim_whitespace=True)
     if 'Z' in list(df.columns.values) and 'P' not in list(df.columns.values):
         df["P"] = 2*st.norm.cdf(-abs(df.Z))
     elif not all(elem in ['SNP', 'P', 'N'] for elem in list(df.columns.values)):
