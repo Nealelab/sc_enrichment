@@ -323,11 +323,15 @@ if __name__ == "__main__":
         main_file = args.main_annot_ldscores        
 
     prefix = args.prefix
-    ss_list = args.summary_stats_files.split(',')
+    if not args.just_ldscores:
+        ss_list = args.summary_stats_files.split(',')
+    else:
+        ss_list=None    
     
 
     logging.info('The main annotation file(s) or LDscore(s) to Download: '+ main_file)
-    logging.info('The summary statistic(s) to download: ' + ':'.join(ss_list))
+    if not args.just_ldscores:
+        logging.info('The summary statistic(s) to download: ' + ':'.join(ss_list))
 
     ld_ref_panel = "No Baseline Panel"
     ld_cond_panel = "No Conditional Panel"
