@@ -447,7 +447,6 @@ if __name__ == "__main__":
         logging.info('LDscores copied to ' + str(args.export_ldscore_path))
         subprocess.call(['gsutil','-m','cp','-r','/mnt/data/outld/*',os.path.join(args.export_ldscore_path,"")])
         # Writing report
-        write_report(report_name=prefix + '.report',main_panel=main_file, outfile='\t'.join(outfiles_list))
     
     else:
         # Partitioning heritability
