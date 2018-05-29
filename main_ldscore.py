@@ -29,7 +29,7 @@ def parse_args():
     parser.add_argument('--condition-annot-bed',help='Path to file in bed format to run as a conditional annotation. This can also have an additional column for a continuous annotation.')
     parser.add_argument('--just-ldscores', action='store_true', default=False, help='Use this flag if you only want to calculate LD-Scores and don\'t need to run a regression. Must be used with --export-ldscore-path')
 
-    parser.add_argument('--summary-stats-files', required=True,  help = 'File(s) (already processed with munge_sumstats.py) where to apply partition LDscore, files should end with .sumstats.gz. If multiple files are used, need a comma-separated list.')
+    parser.add_argument('--summary-stats-files', required=False,  help = 'File(s) (already processed with munge_sumstats.py) where to apply partition LDscore, files should end with .sumstats.gz. If multiple files are used, need a comma-separated list.')
     parser.add_argument('--prefix', required=True, help = 'Prefix that will be used for the ldscore files and the regression output files.')
     parser.add_argument('--out', required=True, help = 'Path to save the regression results.')
     parser.add_argument('--export-ldscore-path', help = 'Path to export the LDscores generated from --main-annot-rsids/genes/bed')
