@@ -33,7 +33,7 @@ def parse_args():
     parser.add_argument('--prefix', required=True, help = 'Prefix that will be used for the ldscore files and the regression output files.')
     parser.add_argument('--out', required=True, help = 'Path to save the regression results.')
     parser.add_argument('--export-ldscore-path', help = 'Path to export the LDscores generated from --main-annot-rsids/genes/bed')
-    parser.add_argument('--no_baseline', action='store_true', default=False, help = 'Do not condition on baseline annotations')
+    parser.add_argument('--no_baseline',action='store_true', default=False, help = 'Do not condition on baseline annotations')
 
 
     parser.add_argument('--windowsize', type=int, default=100000, help = 'size of the window around the gene')
