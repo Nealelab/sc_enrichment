@@ -27,7 +27,7 @@ def parse_args():
     parser.add_argument('--condition-annot-rsids',help='Path to file with list of rsids to run as a conditional annotation. This can also have an additional column for a continuous annotation.')
     parser.add_argument('--condition-annot-ldscores',help='Path to a folder with ldscores to condition on for the regression.')
     parser.add_argument('--condition-annot-bed',help='Path to file in bed format to run as a conditional annotation. This can also have an additional column for a continuous annotation.')
-    parser.add_argument('--just-ldscores',help='Use this flag if you only want to calculate LD-Scores and don\'t need to run a regression. Must be used with --export-ldscore-path')
+    parser.add_argument('--just-ldscores',action='store_true', default=False, help='Use this flag if you only want to calculate LD-Scores and don\'t need to run a regression. Must be used with --export-ldscore-path')
 
     parser.add_argument('--summary-stats-files', required=True,  help = 'File(s) (already processed with munge_sumstats.py) where to apply partition LDscore, files should end with .sumstats.gz. If multiple files are used, need a comma-separated list.')
     parser.add_argument('--prefix', required=True, help = 'Prefix that will be used for the ldscore files and the regression output files.')
@@ -158,9 +158,10 @@ def download_files(args,main_file,ss_list,prefix):
     subprocess.call(['gsutil','cp',args.gene_coord_file,'/mnt/data/GENENAME_gene_annot.txt'])
 
     # Download summary stats
-    logging.info('Downloading summary statistic(s):' + ':'.join(ss_list))
-    for ss in ss_list:
-        subprocess.call(['gsutil','cp',ss,'/mnt/data/ss/'])
+    if not args.just_ldscores:
+        logging.info('Downloading summary statistic(s):' + ':'.join(ss_list))
+        for ss in ss_list:
+            subprocess.call(['gsutil','cp',ss,'/mnt/data/ss/'])
 
 def prepare_annotations_bed(args,bed_file,plink_panel):
 
@@ -418,7 +419,8 @@ if __name__ == "__main__":
         logging.debug('ld_cond_panels_file_t: ' + ':'.join(ld_cond_panels_file_t))
 
     # Summary statistics
-    list_sumstats_file=glob.glob("/mnt/data/ss/*")
+    if not args.just_ldscores:
+        list_sumstats_file=glob.glob("/mnt/data/ss/*")
 
     # Panels for conditioning
     if not args.no_baseline:
