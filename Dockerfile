@@ -13,13 +13,13 @@ cp /home/bedtools2/bin/bedtools /usr/bin/
 RUN wget https://ctg.cncr.nl/software/MAGMA/prog/magma_v1.06b.zip --quiet -P /home/ && \
 unzip -q /home/magma_v1.06b.zip -d /home/
 
-RUN pip install -U joblib==0.11 pandas==0.19.2 numpy==1.11.3 scipy==0.18.1 bitarray==0.8.1 pybedtools==0.7.10 h5py==2.7.1
+RUN pip install -U pip joblib==0.11 pandas==0.19.2 numpy==1.11.3 scipy==0.18.1 bitarray==0.8.1 pybedtools==0.7.10 h5py==2.7.1
 
 RUN	mkdir -p /home/ldscore/ && \
 	wget --quiet -P /home/ldscore/ https://github.com/Nealelab/ldsc/archive/kt_exclude_files.zip && \
     unzip -q /home/ldscore/kt_exclude_files.zip -d /home/ldscore
 
-RUN	mkdir -p /home/sc_enrichement/ && \
+RUN	mkdir -p /home/sc_enrichment/ && \
 	wget --quiet -P /home/sc_enrichment/ https://github.com/Nealelab/sc_enrichment/archive/master.zip && \
     unzip -q /home/sc_enrichment/master.zip -d /home/sc_enrichment
 
