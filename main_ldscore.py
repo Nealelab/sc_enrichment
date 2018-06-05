@@ -34,7 +34,7 @@ def parse_args():
     parser.add_argument('--out', required=False, help = 'Path to save the regression results.')
     parser.add_argument('--export-ldscore-path', help = 'Path to export the LDscores generated from --main-annot-rsids/genes/bed')
     parser.add_argument('--no-baseline', action='store_true', default=False, help = 'Do not condition on baseline annotations')
-    parser.add_argument('--exclude-file', help = 'File in UCSC format of regions to exclude in regression')
+    parser.add_argument('--exclude-file', help = 'File in UCSC bed format of regions to exclude in regression')
 
     parser.add_argument('--windowsize', type=int, default=100000, help = 'size of the window around the gene')
     parser.add_argument('--snp-list-file', default="gs://singlecellldscore/list.txt", help = 'Path of the file containing the list of SNPs to use for the generation of the LD-scores')
@@ -121,7 +121,10 @@ def download_files(args,main_file,ss_list,prefix):
     if args.main_annot_ldscores:  
         logging.info('Downloading main annotation LDscores(s):' + main_file)
         subprocess.call(['mkdir','/mnt/data/outld'])
-        subprocess.call(['gsutil','-m','cp','-r',os.path.join(main_file, "") + '*' ,'/mnt/data/outld/'])
+        if '*' in main_file:
+            subprocess.call(['gsutil','-m','cp','-r',main_file,'/mnt/data/outld/'])
+        else:
+            subprocess.call(['gsutil','-m','cp','-r',os.path.join(main_file, "") + '*' ,'/mnt/data/outld/'])
     elif (args.main_annot_genes or args.main_annot_rsids or args.main_annot_bed):
         logging.info('Downloading main annotation file(s):' + main_file)
         subprocess.call(['gsutil','cp',main_file,'/mnt/data/'])
@@ -293,9 +296,9 @@ def write_report(report_name,sum_stat,main_panel,cond_panels,outfile):
         file.write("Conditional panel(s) used: " + cond_panels + '\n')
         file.write("Main output file(s): " + outfile + '\n')
 
-def ldsc_h2_exclude(infile, phname, params_file, ld_ref_panel, ld_w_panel, tg_f_panel,outfile):
+def ldsc_h2_exclude(infile, phname, params_file, ld_ref_panel, ld_w_panel, tg_f_panel,outfile,exclude_file):
 
-    """Perform partioning hertiability """
+    """Perform partioning hertiability """ZZ
     subprocess.call(['/home/ldscore/ldsc-kt_exclude_files/ldsc.py',
                                 '--h2-cts',infile,
                                 '--ref-ld-chr',ld_ref_panel,
