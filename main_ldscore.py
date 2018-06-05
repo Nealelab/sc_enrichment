@@ -298,7 +298,7 @@ def write_report(report_name,sum_stat,main_panel,cond_panels,outfile):
 
 def ldsc_h2_exclude(infile, phname, params_file, ld_ref_panel, ld_w_panel, tg_f_panel,outfile,exclude_file):
 
-    """Perform partioning hertiability """ZZ
+    """Perform partioning hertiability """
     subprocess.call(['/home/ldscore/ldsc-kt_exclude_files/ldsc.py',
                                 '--h2-cts',infile,
                                 '--ref-ld-chr',ld_ref_panel,
