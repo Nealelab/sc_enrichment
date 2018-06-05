@@ -33,8 +33,8 @@ def parse_args():
     parser.add_argument('--prefix', required=True, help = 'Prefix that will be used for the ldscore files and the regression output files.')
     parser.add_argument('--out', required=False, help = 'Path to save the regression results.')
     parser.add_argument('--export-ldscore-path', help = 'Path to export the LDscores generated from --main-annot-rsids/genes/bed')
-    parser.add_argument('--no_baseline', action='store_true', default=False, help = 'Do not condition on baseline annotations')
-
+    parser.add_argument('--no-baseline', action='store_true', default=False, help = 'Do not condition on baseline annotations')
+    parser.add_argument('--exclude-file', help = 'File in UCSC format of regions to exclude in regression')
 
     parser.add_argument('--windowsize', type=int, default=100000, help = 'size of the window around the gene')
     parser.add_argument('--snp-list-file', default="gs://singlecellldscore/list.txt", help = 'Path of the file containing the list of SNPs to use for the generation of the LD-scores')
@@ -153,6 +153,9 @@ def download_files(args,main_file,ss_list,prefix):
     logging.info('Downloading SNP list for LDscore')
     subprocess.call(['gsutil','cp',args.snp_list_file,'/mnt/data/list.txt'])
 
+    if args.exclude_file:
+        logging.info('Downloading file to exclude in regression')
+        subprocess.call(['gsutil','cp',args.exclude_file,'/mnt/data/exclude.bed'])
     # Download file mapping SNPs to positions
     logging.info('Downloading file to map genes to positions')
     subprocess.call(['gsutil','cp',args.gene_coord_file,'/mnt/data/GENENAME_gene_annot.txt'])
@@ -290,6 +293,22 @@ def write_report(report_name,sum_stat,main_panel,cond_panels,outfile):
         file.write("Conditional panel(s) used: " + cond_panels + '\n')
         file.write("Main output file(s): " + outfile + '\n')
 
+def ldsc_h2_exclude(infile, phname, params_file, ld_ref_panel, ld_w_panel, tg_f_panel,outfile):
+
+    """Perform partioning hertiability """
+    subprocess.call(['/home/ldscore/ldsc-kt_exclude_files/ldsc.py',
+                                '--h2-cts',infile,
+                                '--ref-ld-chr',ld_ref_panel,
+                                '--ref-ld-chr-cts',params_file,
+                                '--w-ld-chr',ld_w_panel,
+                                '--frqfile-chr',tg_f_panel,
+                                '--overlap-annot',
+                                '--exclude-file',exclude_file,
+                                '--print-all-cts',
+                                '--print-coefficients',
+                                '--out',outfile])
+
+    logging.info('Running estimate_h2 on: ' + infile)
 
 def ldsc_h2(infile, phname, params_file, ld_ref_panel, ld_w_panel, tg_f_panel,outfile):
 
@@ -327,7 +346,6 @@ if __name__ == "__main__":
         ss_list = args.summary_stats_files.split(',')
     else:
         ss_list=None    
-    
 
     logging.info('The main annotation file(s) or LDscore(s) to Download: '+ main_file)
     if not args.just_ldscores:
@@ -456,8 +474,10 @@ if __name__ == "__main__":
             outfile = '/mnt/data/' + phname + '.' + prefix + '.ldsc'
             outfiles_list.append('/mnt/data/' + phname + '.' + prefix + '.ldsc.cell_type_results.txt')
             logging.info('Running partition LDscores for ' + phname)
-            ldsc_results = ldsc_h2(infile=sumstats, phname=phname, params_file='/mnt/data/params.ldcts',ld_ref_panel=ld_cond_panel, ld_w_panel=ld_w_panel,tg_f_panel=tg_f_panel,outfile=outfile)
-
+            if not args.exclude_file:
+                ldsc_results = ldsc_h2(infile=sumstats, phname=phname, params_file='/mnt/data/params.ldcts',ld_ref_panel=ld_cond_panel, ld_w_panel=ld_w_panel,tg_f_panel=tg_f_panel,outfile=outfile)
+            else:
+                ldsc_results = ldsc_h2_exclude(infile=sumstats, phname=phname, params_file='/mnt/data/params.ldcts',ld_ref_panel=ld_cond_panel, ld_w_panel=ld_w_panel,tg_f_panel=tg_f_panel,outfile=outfile,exclude_file='/mnt/data/exclude.bed')
 
         # Writing report
         write_report(report_name=prefix + '.report',sum_stat='\t'.join(ss_list),main_panel=main_file, cond_panels=ld_cond_panel, outfile='\t'.join(outfiles_list))
