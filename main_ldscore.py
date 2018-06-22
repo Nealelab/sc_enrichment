@@ -23,7 +23,9 @@ def parse_args():
     parser.add_argument('--main-annot-rsids',help='Path to file with list of rsids to run as your annotation. This can also have an additional column for a continuous annotation.')
     parser.add_argument('--main-annot-ldscores',help='Path to folder with ldscores for the regression.')
     parser.add_argument('--main-annot-bed',help='Path to file in bed format to run as your annotation. This can also have an additional column for a continuous annotation.')
-    parser.add_argument('--main-annot-ldcts',help='Path to file that has one geneset per line to run multiple genesets using --cts flag in ldsc software on one machine.')
+    
+    parser.add_argument('--main-annot-ldcts',help='Path to file that has prefix for what you want your ldcsores to be named "\t" google bucket path to a geneset, one per line to run multiple genesets using --cts flag in ldsc software on one machine.')
+    parser.add_argument('--main-annot-ldscores-ldcts',help='Path to file that has prefix of ldscores "\t" gs://path/to/ldscores/prefix.*')
 
     parser.add_argument('--condition-annot-genes', help = 'Path to file with a list of genes to run as a conditional annotation.This can also have an additional column for continuous annotations.')
     parser.add_argument('--condition-annot-rsids',help='Path to file with list of rsids to run as a conditional annotation. This can also have an additional column for a continuous annotation.')
@@ -32,7 +34,7 @@ def parse_args():
     parser.add_argument('--just-ldscores', action='store_true', default=False, help='Use this flag if you only want to calculate LD-Scores and don\'t need to run a regression. Must be used with --export-ldscore-path')
 
     parser.add_argument('--summary-stats-files', required=False,  help = 'File(s) (already processed with munge_sumstats.py) where to apply partition LDscore, files should end with .sumstats.gz. If multiple files are used, need a comma-separated list.')
-    parser.add_argument('--prefix', required=True, help = 'Prefix that will be used for the ldscore files and the regression output files.')
+    parser.add_argument('--prefix', required=True, help = 'Prefix that will be used for the ldscore files and the regression output files. If using a --main-annot-*-ldcts flag, this should be a common descriptor of the analyses.')
     parser.add_argument('--out', required=False, help = 'Path to save the regression results.')
     parser.add_argument('--export-ldscore-path', help = 'Path to export the LDscores generated from --main-annot-rsids/genes/bed')
     parser.add_argument('--no-baseline', action='store_true', default=False, help = 'Do not condition on baseline annotations')
@@ -55,7 +57,7 @@ def parse_args():
 
     args = parser.parse_args()
     if not args.just_ldscores:
-        if not ((args.main_annot_genes or args.main_annot_rsids or args.main_annot_ldscores or args.main_annot_bed or args.main_annot_ldcts) or args.summary_stats_files or args.prefix or args.out):
+        if not ((args.main_annot_genes or args.main_annot_rsids or args.main_annot_ldscores or args.main_annot_bed or args.main_annot_ldcts or args.main_annot_ldscores_ldcts) or args.summary_stats_files or args.prefix or args.out):
             parser.error("You have to specify --main-annot-* and --summary-stats-files and --prefix and --out")
     else:
         if not ((args.main_annot_genes or args.main_annot_rsids or args.main_annot_ldscores or args.main_annot_bed) or args.prefix or args.export_ldscore_path):
@@ -131,12 +133,22 @@ def download_files(args,main_file,ss_list,prefix):
     elif (args.main_annot_genes or args.main_annot_rsids or args.main_annot_bed):
         logging.info('Downloading main annotation file(s):' + main_file)
         subprocess.call(['gsutil','cp',main_file,'/mnt/data/'])
-    elif (args.main_annot_ldcts):
+    elif args.main_annot_ldcts:
         logging.info('Downloading main annotation files from list of files provided.')
         subprocess.call(['gsutil','cp',main_file,'/mnt/data/file.ldcts'])
         with open('/mnt/data/file.ldcts','r') as ldcts_file:
             for line in ldcts_file:
                 subprocess.call(['gsutil','cp',line,'/mnt/data/genesets/'])
+    elif args.main_annot_ldscores_ldcts:
+        logging.info('Downloading main annotation files from list of files provided.')
+        subprocess.call(['gsutil','cp',main_file,'/mnt/data/file.ldcts'])
+        with open('/mnt/data/file.ldcts','r') as ldcts_file:
+            for line in ldcts_file:
+                path = line.split()[1]
+                if '*' in path:
+                    subprocess.call(['gsutil','-m','cp','-r',path,'/mnt/data/outld/'])
+                else:
+                    subprocess.call(['gsutil','-m','cp','-r',os.path.join(path, "") + '*' ,'/mnt/data/outld/'])
 
     # Download conditional annotations
     if (args.condition_annot_ldscores or args.condition_annot_genes or args.condition_annot_rsids or args.condition_annot_bed):
@@ -209,7 +221,7 @@ def prepare_annotations_genes(args,gene_list,plink_panel):
                         '--windowsize',str(args.windowsize),
                         '--gene-col-name', str(args.gene_col_name)])
 
-def prepare_annotations_genes_ldcts(args,gene_list,plink_panel,filename):
+def prepare_annotations_genes_ldcts(args,gene_list,plink_panel,local_prefix):
     """Prepare LDscores for analysis"""
     logging.info('Creating LDscores')
 
@@ -220,7 +232,7 @@ def prepare_annotations_genes_ldcts(args,gene_list,plink_panel,filename):
                         '--chrom',str(chrom),
                         '--gene-coord-file',"/mnt/data/GENENAME_gene_annot.txt",
                         '--bfile-chr',plink_panel,
-                        '--prefix',"/mnt/data/tmp/"+filename,
+                        '--prefix',"/mnt/data/tmp/"+local_prefix,
                         '--windowsize',str(args.windowsize),
                         '--gene-col-name', str(args.gene_col_name)])
 
@@ -286,16 +298,16 @@ def calculate_ldscores(args,outldscore,plink_panel,noun):
                             '--thin-annot',
                             '--out', outldscore + "." + str(chrom)])
 
-def calculate_ldscores_ldcts(args,geneset,outldscore,plink_panel):
+def calculate_ldscores_ldcts(args,outldscore,plink_panel,local_prefix):
     for chrom in range(1,23):
         logging.debug('Running ldsc.py for chr ' + str(chrom) )
         subprocess.call(['/home/ldscore/ldsc-kt_exclude_files/ldsc.py',
                         '--l2',
                         '--bfile',plink_panel + str(chrom),
                         '--ld-wind-cm', "1",
-                        '--annot','/mnt/data/tmp/' + geneset + '.' + str(chrom) + '.annot.gz',
+                        '--annot','/mnt/data/tmp/' + local_prefix+ '.' + str(chrom) + '.annot.gz',
                         '--thin-annot',
-                        '--out', outldscore + '.' + geneset + '.' + str(chrom),
+                        '--out', outldscore + local_prefix + '.' + str(chrom),
                         '--print-snps',"/mnt/data/list.txt"])    
 
 def commonprefix(m):
@@ -317,10 +329,13 @@ def prepare_params_file(args,prefix,name_main_ldscore,params_file='/mnt/data/par
         logging.debug('Save parameter file with prefix: ' + prefix + ' and ldscore: /mnt/data/outld/' + name_main_ldscore)
         file.write(prefix + "\t" + '/mnt/data/outld/' + name_main_ldscore + '\n')
 
-def prepare_params_file_ldcts(args,prefix,main_file,params_file='/mnt/data/params.ldcts'):
+def prepare_params_file_ldcts(args,main_file,params_file='/mnt/data/params.ldcts'):
     with open(params_file,'w') as file:
-        for filename in os.listdir('/mnt/data/genesets/'):
-            file.write(filename + "\t" + '/mnt/data/outld/'+prefix + '.' + filename + '.'+"\n")
+        with open('/mnt/data/file.ldcts','r') as ldcts_file:
+            for line in ldcts_file:
+                local_prefix = line.split()[0]
+                file.write(local_prefix + "\t" + '/mnt/data/outld/'+local_prefix+'.'+"\n")
+
 
 def write_report(report_name,sum_stat,main_panel,cond_panels,outfile):
 
@@ -380,7 +395,10 @@ if __name__ == "__main__":
     if args.main_annot_ldscores:
         main_file = args.main_annot_ldscores 
     if args.main_annot_ldcts:
-        main_file = args.main_annot_ldcts       
+        main_file = args.main_annot_ldcts
+    if args.main_annot_ldscores_ldcts:
+        main_file = args.main_annot_ldscores_ldcts    
+
 
     prefix = args.prefix
     if not args.just_ldscores:
@@ -421,9 +439,11 @@ if __name__ == "__main__":
         temp_name_list =  [os.path.basename(x) for x in glob.glob('/mnt/data/outld/*')]
         name_main_ldscore = commonprefix(temp_name_list)
     elif (args.main_annot_ldcts):
-        for geneset in os.listdir('/mnt/data/genesets/'):
-            prepare_annotations_genes_ldcts(args,gene_list='/mnt/data/genesets/' + geneset,plink_panel=plink_panel,filename=geneset)
-            calculate_ldscores_ldcts(args,geneset=geneset,outldscore='/mnt/data/outld/'+ prefix,plink_panel=plink_panel)
+        with open('/mnt/data/file.ldcts','r') as ldcts_file:
+            for line,geneset in zip(ldcts_file,os.listdir('/mnt/data/genesets/')):
+                local_prefix = line.split()[0]
+                prepare_annotations_genes_ldcts(args,gene_list='/mnt/data/genesets/' + geneset,plink_panel=plink_panel,local_prefix=local_prefix)
+                calculate_ldscores_ldcts(args,outldscore='/mnt/data/outld/',plink_panel=plink_panel,local_prefix=local_prefix)
 
 	    
     # If provided, prepare annotation for conditioning gene lists
@@ -447,10 +467,10 @@ if __name__ == "__main__":
             calculate_ldscores(args,outldscore='/mnt/data/outcondld/' + k_name + '/' + k_name,plink_panel=plink_panel,noun=noun)   
     
     # Save parameter file
-    if not args.main_annot_ldcts:
+    if not (args.main_annot_ldcts or args.main_annot_ldscores_ldcts):
         prepare_params_file(args,prefix,name_main_ldscore)
     else:
-        prepare_params_file_ldcts(args,prefix,main_file)
+        prepare_params_file_ldcts(args,main_file)
 
     # Weight panel
     name_w = os.path.split(args.tkg_weights_folder)
