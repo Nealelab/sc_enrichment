@@ -24,9 +24,11 @@ def parse_args():
     parser.add_argument('--summary-stats-files', required=True,  help = 'File(s) (already processed with munge_sumstats.py) where to apply partition LDscore, files should end with .sumstats.gz. If multiple files are used, need a comma-separated list.')
     parser.add_argument('--prefix', required=True, help = 'Prefix for main-annot file.')
     parser.add_argument('--out', required=True, help = 'Path to save the results')
+    parser.add_argument('--windowsize', type=int, default=10000, help = 'size of the window around the gene, default=10Kb')
     parser.add_argument('--verbose', help="increase output verbosity",action="store_true")
     parser.add_argument('--quantiles', type=int, default=5,required=False, help='If using a continuous annotation,the number of quantiles to split it into for regression.')
     parser.add_argument('--cont-breaks',type=str,required=False,help='Specific boundary points to split your continuous annotation on, comma separated list e.g. 0.1,0.4,0.5,0.6. ATTENTION: if you use negative values add a space in the beginning e.g. <space>-0.1,-0.4,0.5,0.6')
+
 
     args = parser.parse_args()
     if not (args.main_annot_genes or args.summary_stats_files or args.prefix or args.out):
@@ -52,13 +54,7 @@ def type_of_file(file_input):
     return noun
 
 
-def run_magma(magma_gwas_resuts,out):
-    subprocess.call(['/home/magma',
-                            '--gene-results',magma_gwas_resuts,
-                            '--set-annot','/mnt/data/gene_list_for_magma',
-                            '--out',out])
 
-     
 def commonprefix(m):
 
     """Given a list of pathnames, returns the longest common leading component"""
@@ -199,6 +195,7 @@ def run_magma(args,sumstat,phname,prefix_cond_string_dicot,prefix_cond_string_co
                             '--bfile','/mnt/data/g1000_eur',
                             '--pval','/mnt/data/tmp/extracted_for_magma_' + phname,
                             'ncol=N',
+                            '--annotate window=',args.windowsize,
                             '--gene-annot','/mnt/data/magma_annotation_1000g_h37.genes.annot',
                             '--out','/mnt/data/tmp/genes_for_magma_'+ phname])
 
@@ -211,6 +208,7 @@ def run_magma(args,sumstat,phname,prefix_cond_string_dicot,prefix_cond_string_co
                                 '--gene-results','/mnt/data/tmp/genes_for_magma_'+ phname + '.genes.raw',
                                 '--set-annot','/mnt/data/cond_gene_list_for_magma',
                                 'condition='+ prefix_cond_string_dicot,
+                                '--annotate window=',args.windowsize,
                                 '--gene-covar',prefix_cond_string_cont,
                                 'condition=' + ncol_out,
                                 '--out','/mnt/data/magma_results_0_' + phname])
@@ -219,6 +217,7 @@ def run_magma(args,sumstat,phname,prefix_cond_string_dicot,prefix_cond_string_co
             subprocess.call(['/home/magma',
                                 '--gene-results','/mnt/data/tmp/genes_for_magma_'+ phname + '.genes.raw',
                                 '--set-annot','/mnt/data/cond_gene_list_for_magma',
+                                '--annotate window=',args.windowsize,
                                 'condition='+ prefix_cond_string_dicot,
                                 '--out','/mnt/data/magma_results_0_' + phname])
 
@@ -226,6 +225,7 @@ def run_magma(args,sumstat,phname,prefix_cond_string_dicot,prefix_cond_string_co
             subprocess.call(['/home/magma',
                                 '--gene-results','/mnt/data/tmp/genes_for_magma_'+ phname + '.genes.raw',
                                 '--set-annot','/mnt/data/gene_list_for_magma',
+                                '--annotate window=',args.windowsize,
                                 '--gene-covar',prefix_cond_string_cont,
                                 'condition=' + ncol_out,
                                 '--out','/mnt/data/magma_results_0_' + phname])
@@ -233,6 +233,7 @@ def run_magma(args,sumstat,phname,prefix_cond_string_dicot,prefix_cond_string_co
             subprocess.call(['/home/magma',
                                 '--gene-results','/mnt/data/tmp/genes_for_magma_'+ phname + '.genes.raw',
                                 '--set-annot','/mnt/data/gene_list_for_magma',
+                                '--annotate window=',args.windowsize,
                                 '--out','/mnt/data/magma_results_0_' + phname])
 
     elif n_magma_genefiles > 1:
@@ -244,6 +245,7 @@ def run_magma(args,sumstat,phname,prefix_cond_string_dicot,prefix_cond_string_co
                                 '--gene-results','/mnt/data/tmp/genes_for_magma_'+ phname + '.genes.raw',
                                 '--set-annot','/mnt/data/cond_gene_list_for_magma_' + str(quantvalue),
                                 'condition='+ prefix_cond_string_dicot,
+                                '--annotate window=',args.windowsize,
                                 '--gene-covar',prefix_cond_string_cont,
                                 'condition=' + ncol_out,
                                 '--out','/mnt/data/magma_results_' + str(quantvalue) + "_" + phname])
@@ -252,6 +254,7 @@ def run_magma(args,sumstat,phname,prefix_cond_string_dicot,prefix_cond_string_co
                 subprocess.call(['/home/magma',
                                 '--gene-results','/mnt/data/tmp/genes_for_magma_'+ phname + '.genes.raw',
                                 '--set-annot','/mnt/data/cond_gene_list_for_magma_' + str(quantvalue),
+                                '--annotate window=',args.windowsize,
                                 'condition='+ prefix_cond_string_dicot,
                                 '--out','/mnt/data/magma_results_' + str(quantvalue) + "_" + phname])
 
@@ -260,12 +263,14 @@ def run_magma(args,sumstat,phname,prefix_cond_string_dicot,prefix_cond_string_co
                                 '--gene-results','/mnt/data/tmp/genes_for_magma_'+ phname + '.genes.raw',
                                 '--set-annot','/mnt/data/gene_list_for_magma_' + str(quantvalue),
                                 '--gene-covar',prefix_cond_string_cont,
+                                '--annotate window=',args.windowsize,
                                 'condition=' + ncol_out,
                                 '--out','/mnt/data/magma_results_' + str(quantvalue) + "_" + phname])
             else:
                 subprocess.call(['/home/magma',
                                 '--gene-results','/mnt/data/tmp/genes_for_magma_'+ phname + '.genes.raw',
                                 '--set-annot','/mnt/data/gene_list_for_magma_' + str(quantvalue),
+                                '--annotate window=',args.windowsize,
                                 '--out','/mnt/data/magma_results_' + str(quantvalue) + "_" + phname])
 
     logging.info('MAGMA file generated: '+ '/mnt/data/magma_results_' + phname)
