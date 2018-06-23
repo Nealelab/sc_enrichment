@@ -2,6 +2,17 @@
 
 This is a cloud-based pipeline that uses the job submission tool [dsub](https://github.com/DataBiosphere/dsub) to run [stratified LD-Score Regression](https://www.biorxiv.org/content/early/2015/01/23/014241) and [MAGMA](http://journals.plos.org/ploscompbiol/article?id=10.1371%2Fjournal.pcbi.1004219) in a parallelized way. The pipeline is split into two scripts, main_ldscore.py and main_magma.py. 
 
+
+The pipeline run on VMs created by ```dsub``` and require a ```Dockerfile``` to be loaded on each VM. The docker file can be built as follow:
+
+```
+docker build --no-cache -t gcr.io/ldscore-data/ldscore .
+gcloud docker -- push gcr.io/ldscore-data/ldscore
+# We made it publically available
+gsutil iam ch allUsers:objectViewer gs://artifacts.ldscore-data.appspot.com
+```
+
+
 Flags for ```main_ldscore.py```:
 
 ```
