@@ -154,7 +154,7 @@ def prepare_magma_continuous(args):
             output.write(outlist)
         logging.info('Wrote geneset for MAGMA: /mnt/data/gene_list_for_magma_'+str(ind))
 
-    download_magma()
+    download_magma(args.windowsize)
 
 
 def process_conditional_genesets(cond_file,prefix_cond):
