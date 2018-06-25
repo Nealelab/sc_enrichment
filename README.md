@@ -30,6 +30,19 @@ you want to partition heritability. There can be a 4th column that is a continuo
 annotation.
 ```
 ```
+--main-annot-ldcts
+This flag accepts a file that has two columns, the first is the prefix for your ldscores for a geneset,
+and the second is the google bucket path to the corresponding geneset. One geneset per line. This allows
+the user to take advantage of the --cts flags within LDSC software to run many genesets on one VM.
+```
+```
+--main-annot-ldscores-ldcts
+This flag accepts a file that has two columns, the first is the prefix of the ldscores for a geneset,
+and the second the google bucket path to the corresponding ldscores. On set of ldscores per line.
+This allows the user to take advantage of the --cts flags within LDSC when you already have
+ldscores calculated. E.g. test_analyses.GeneSet1 gs://test_analyses/ldscores/test_analyses.GeneSet1.*
+```
+```
 --condition-annot-genes/--condition-annot-rsids/--condition-annot-ldscores/--condition-annot-bed
 These flags work the same as the --main-annot-* flags but are used when you want 
 to condition the regression on another annotation.
@@ -69,10 +82,11 @@ e.g if your --gene-coord-file is headed as such: ENTREZ CHR START END you would 
 Steps to run the pipeline:
 
 1. Prepare a tab-separated file containing the inputs for the `dsub` command. See an example in `/example/submit_list_example.tsv`. These environmental variables are then read in by the script called by `dsub` as explained below.
-These fields are mandatories:
+Depending on your analysis, these fields can change but below is an example:
 ```
 --env INPUT_MAIN - This will provide your main annotation, can be path to gene list, rsids,
-                   ldscore folder or bed file. In this example it is a gene list.
+                   ldscore folder, bed file or ldcts file with genesets or ldscores.
+		   In this example it is a gene list.
 --env INPUT_SUMSTAT - List of comma-separated files (already processed with munge_sumstats.py) 
                       where to apply partition LDscore.
 --env PREFIX - Prefix for the ldscores files that will be created and the results file 
@@ -121,8 +135,9 @@ dsub \
 	--project ldscore-data \
 	--zones "us-central1-*" \
 	--min-ram 4 \
+	--min-cores 4 \
 	--logging gs://singlecellldscore/example/log/ \
-	--disk-size 200 \
+	--disk-size 100 \
 	--image gcr.io/ldscore-data/ldscore \
 	--tasks example/submit_list_example.tsv \
 	--script example/run_sc_enrichment_example.py
