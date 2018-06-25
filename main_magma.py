@@ -24,9 +24,11 @@ def parse_args():
     parser.add_argument('--summary-stats-files', required=True,  help = 'File(s) (already processed with munge_sumstats.py) where to apply partition LDscore, files should end with .sumstats.gz. If multiple files are used, need a comma-separated list.')
     parser.add_argument('--prefix', required=True, help = 'Prefix for main-annot file.')
     parser.add_argument('--out', required=True, help = 'Path to save the results')
+    parser.add_argument('--windowsize', type=int, default=10, help = 'size (in KB) of the window around the gene, default=10')
     parser.add_argument('--verbose', help="increase output verbosity",action="store_true")
     parser.add_argument('--quantiles', type=int, default=5,required=False, help='If using a continuous annotation,the number of quantiles to split it into for regression.')
     parser.add_argument('--cont-breaks',type=str,required=False,help='Specific boundary points to split your continuous annotation on, comma separated list e.g. 0.1,0.4,0.5,0.6. ATTENTION: if you use negative values add a space in the beginning e.g. <space>-0.1,-0.4,0.5,0.6')
+
 
     args = parser.parse_args()
     if not (args.main_annot_genes or args.summary_stats_files or args.prefix or args.out):
@@ -52,13 +54,7 @@ def type_of_file(file_input):
     return noun
 
 
-def run_magma(magma_gwas_resuts,out):
-    subprocess.call(['/home/magma',
-                            '--gene-results',magma_gwas_resuts,
-                            '--set-annot','/mnt/data/gene_list_for_magma',
-                            '--out',out])
 
-     
 def commonprefix(m):
 
     """Given a list of pathnames, returns the longest common leading component"""
@@ -72,7 +68,7 @@ def commonprefix(m):
     return s1
 
 
-def download_magma():
+def download_magma(windowsize):
 
     """ Download MAGMA files and do initial gene assignment """
 
@@ -80,8 +76,11 @@ def download_magma():
     subprocess.call(['gsutil','cp','gs://singlecellldscore/g1000_eur.zip','/mnt/data/'])
     subprocess.call(['unzip','-o','/mnt/data/g1000_eur.zip','-d','/mnt/data/'])
     subprocess.call(['gsutil','cp','gs://singlecellldscore/NCBI37.3.gene.name.loc','/mnt/data/'])
+    logging.info('The Window Size is: ' + str(windowsize))
+    if windowsize > 1000:
+        logging.info("Are you sure you specified the window size in KB?") 
     subprocess.call(['/home/magma',
-                                '--annotate',
+                                '--annotate','window=',str(windowsize),
                                 '--snp-loc','/mnt/data/g1000_eur.bim',
                                 '--gene-loc','/mnt/data/NCBI37.3.gene.name.loc',
                                 '--out','/mnt/data/magma_annotation_1000g_h37'])
@@ -100,7 +99,7 @@ def prepare_magma_binary(args):
         output.write(outlist)
     logging.info('Wrote geneset for MAGMA: /mnt/data/gene_list_for_magma')
 
-    download_magma()
+    download_magma(args.windowsize)
 
 
 
@@ -155,7 +154,7 @@ def prepare_magma_continuous(args):
             output.write(outlist)
         logging.info('Wrote geneset for MAGMA: /mnt/data/gene_list_for_magma_'+str(ind))
 
-    download_magma()
+    download_magma(args.windowsize)
 
 
 def process_conditional_genesets(cond_file,prefix_cond):
