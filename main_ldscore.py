@@ -564,7 +564,6 @@ if __name__ == "__main__":
         outfiles_list = []
         for sumstats in list_sumstats_file:
             phname = os.path.basename(sumstats).replace('.sumstats.gz','')
-            outfiles_list.append('/mnt/data/' + phname + '.' + prefix + '.ldsc.cell_type_results.txt')
             logging.info('Running partition LDscores for ' + phname)
              # If full report, then run  LDscore for each panel
             if args.full_report:
@@ -576,7 +575,9 @@ if __name__ == "__main__":
                         print('ld_cond_panel_full: ' + ld_cond_panel_full)
                         outfile_full = '/mnt/data/' + phname + '.' + prefix + '.' + x[0] + '.ldsc_full'
                         ldsc_h2_full(infile=sumstats, ld_ref_panel=ld_cond_panel_full, ld_w_panel=ld_w_panel,tg_f_panel=tg_f_panel,outfile=outfile_full)
+                        outfiles_list.append('/mnt/data/' + phname + '.' + prefix + '.' + x[0] + '.ldsc_full.cell_type_results.txt')
             else:
+                outfiles_list.append('/mnt/data/' + phname + '.' + prefix + '.ldsc.cell_type_results.txt')
                 outfile = '/mnt/data/' + phname + '.' + prefix + '.ldsc'
                 if not args.exclude_file:
                     ldsc_results = ldsc_h2(infile=sumstats, params_file='/mnt/data/params.ldcts',ld_ref_panel=ld_cond_panel, ld_w_panel=ld_w_panel,tg_f_panel=tg_f_panel,outfile=outfile)
@@ -594,7 +595,7 @@ if __name__ == "__main__":
     
     # Writing the results
         logging.info('Results copied to ' + str(args.export_ldscore_path))
-        subprocess.call(['gsutil','cp','/mnt/data/*.ldsc.cell_type_results.txt',os.path.join(args.out,"")])
-        subprocess.call(['gsutil','cp',"_".join(prefix) + '.report',os.path.join(args.out,"")])
+        subprocess.call(['gsutil','cp','/mnt/data/*.ldsc*.cell_type_results.txt',os.path.join(args.out,"")])
+        subprocess.call(['gsutil','cp',prefix + '.report',os.path.join(args.out,"")])
 
     logging.info('FINITO!')
