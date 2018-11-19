@@ -42,6 +42,7 @@ def parse_args():
 
     parser.add_argument('--windowsize', type=int, default=100000, help = 'size of the window around the gene')
     parser.add_argument('--snp-list-file', default="gs://singlecellldscore/list.txt", help = 'Path of the file containing the list of SNPs to use for the generation of the LD-scores')
+    parser.add_argument('--full-report', help = 'Return a full report, including coefficients and enrichment for all annotations.',action="store_true", default=False)
     parser.add_argument('--gene-coord-file', default="gs://singlecellldscore/GENENAME_gene_annot.txt", help = 'Path of the file containing start and end position for each gene, default is ENTREZ')
     parser.add_argument('--gene-col-name', default="GENENAME", help = 'Gene column name in the file specified in --gene-coord-file')
 
@@ -49,8 +50,7 @@ def parse_args():
     parser.add_argument('--tkg-plink-folder', default="gs://singlecellldscore/plink_files", help = 'Folder containing the chr-specific plink files from 1000 genomes to be used to create LDscores')
     parser.add_argument('--tkg-freq-folder', default="gs://singlecellldscore/1000G_Phase3_frq", help = 'Folder containing the chr-specific plink files with 1000 genomes frequencies')
     parser.add_argument('--baseline-ldscores-folder', default="gs://singlecellldscore/baselineLD_v1.1", help = 'Folder containing the baseline chr-specific LDscores to be used for conditioning')
-    parser.add_argument("--verbose", help="increase output verbosity",
-                    action="store_true")
+    parser.add_argument("--verbose", help="increase output verbosity",action="store_true")
     
     parser.add_argument('--quantiles', type=int, default=0,required=False, help='If using a continuous annotation,the number of quantiles to split it into for regression. Default is 0. Then the annotation is treated as continuous.')
     parser.add_argument('--cont-breaks',type=str,required=False,help='Specific boundary points to split your continuous annotation on, comma separated list e.g. 0.1,0.4,0.5,0.6. ATTENTION: if you use negative values add a space in the beginning e.g. <space>-0.1,-0.4,0.5,0.6')
@@ -62,6 +62,10 @@ def parse_args():
     else:
         if not ((args.main_annot_genes or args.main_annot_rsids or args.main_annot_ldscores or args.main_annot_bed) or args.prefix or args.export_ldscore_path):
             parser.error("You have to specify --main-annot-* and --prefix and --export-ldscore-path")
+
+    if args.full_report:
+        if not (args.main_annot_ldscores_ldcts or args.main_annot_ldcts):
+            parser.error("--full-report can only used with --main-annot-ldscores-ldcts or --main-annot-ldcts")
 
     if (args.cont_breaks):
         args.quantiles = None
@@ -190,7 +194,7 @@ def download_files(args,main_file,ss_list,prefix):
         for ss in ss_list:
             subprocess.call(['gsutil','cp',ss,'/mnt/data/ss/'])
 
-def prepare_annotations_bed(args,bed_file,plink_panel):
+def prepare_annotations_bed(args,bed_file,outldscore,plink_panel):
 
     """Prepare LDscores for analysis"""
     logging.info('Creating LDscores')
@@ -201,12 +205,12 @@ def prepare_annotations_bed(args,bed_file,plink_panel):
                         '--bed-file',bed_file,
                         '--gene-coord-file',"/mnt/data/GENENAME_gene_annot.txt",
                         '--bfile-chr',plink_panel,
-                        '--prefix','/mnt/data/tmp/temp_dscore',
+                        '--prefix',outldscore,
                         '--windowsize',str(args.windowsize),
                         '--gene-col-name', str(args.gene_col_name),
                         '--chrom', str(chrom)])
 
-def prepare_annotations_genes(args,gene_list,plink_panel):
+def prepare_annotations_genes(args,gene_list,outldscore,plink_panel):
     """Prepare LDscores for analysis"""
     logging.info('Creating LDscores')
 
@@ -217,11 +221,11 @@ def prepare_annotations_genes(args,gene_list,plink_panel):
                         '--chrom',str(chrom),
                         '--gene-coord-file',"/mnt/data/GENENAME_gene_annot.txt",
                         '--bfile-chr',plink_panel,
-                        '--prefix',"/mnt/data/tmp/temp_dscore",
+                        '--prefix',outldscore,
                         '--windowsize',str(args.windowsize),
                         '--gene-col-name', str(args.gene_col_name)])
 
-def prepare_annotations_genes_ldcts(args,gene_list,plink_panel,local_prefix):
+def prepare_annotations_genes_ldcts(args,gene_list,outldscore,plink_panel,local_prefix):
     """Prepare LDscores for analysis"""
     logging.info('Creating LDscores')
 
@@ -232,11 +236,11 @@ def prepare_annotations_genes_ldcts(args,gene_list,plink_panel,local_prefix):
                         '--chrom',str(chrom),
                         '--gene-coord-file',"/mnt/data/GENENAME_gene_annot.txt",
                         '--bfile-chr',plink_panel,
-                        '--prefix',"/mnt/data/tmp/"+local_prefix,
+                        '--prefix',outldscore+local_prefix,
                         '--windowsize',str(args.windowsize),
                         '--gene-col-name', str(args.gene_col_name)])
 
-def prepare_annotations_rsids(args,gene_list,plink_panel):
+def prepare_annotations_rsids(args,gene_list,outldscore,plink_panel):
     """Prepare LDscores for analysis"""
     logging.info('Creating LDscores')
 
@@ -247,7 +251,7 @@ def prepare_annotations_rsids(args,gene_list,plink_panel):
                         '--rsid-file',gene_list,
                         '--gene-coord-file',"/mnt/data/GENENAME_gene_annot.txt",
                         '--bfile-chr',plink_panel,
-                        '--prefix','/mnt/data/tmp/temp_dscore',
+                        '--prefix',outldscore,
                         '--windowsize',str(args.windowsize),
                         '--gene-col-name', str(args.gene_col_name),
                         '--chrom', str(chrom)])      
@@ -260,7 +264,7 @@ def calculate_ldscores(args,outldscore,plink_panel,noun):
                             '--l2',
                             '--bfile',plink_panel + str(chrom),
                             '--ld-wind-cm', "1",
-                            '--annot','/mnt/data/tmp/temp_dscore.' + str(chrom) + '.annot.gz',
+                            '--annot',outldscore + '.' + str(chrom) + '.annot.gz',
                             '--thin-annot',
                             '--out', outldscore + "." + str(chrom),
                             '--print-snps',"/mnt/data/list.txt"])
@@ -270,7 +274,7 @@ def calculate_ldscores(args,outldscore,plink_panel,noun):
                             '--l2',
                             '--bfile',plink_panel + str(chrom),
                             '--ld-wind-cm', "1",
-                            '--annot','/mnt/data/tmp/temp_dscore.' + str(chrom) + '.annot.gz',
+                            '--annot',outldscore + '.' + str(chrom) + '.annot.gz',
                             '--thin-annot',
                             '--out', outldscore + "." + str(chrom),
                             '--print-snps',"/mnt/data/list.txt"])
@@ -281,7 +285,7 @@ def calculate_ldscores(args,outldscore,plink_panel,noun):
                                 '--l2',
                                 '--bfile',plink_panel + str(chrom),
                                 '--ld-wind-cm', "1",
-                                '--cont-bin','/mnt/data/tmp/temp_dscore.' + str(chrom) + '.cont_bin.gz',
+                                '--cont-bin',outldscore + '.' + str(chrom) + '.cont_bin.gz',
                                 '--cont-quantiles',str(args.quantiles),
                                 '--thin-annot',
                                 '--out', outldscore + "." + str(chrom)])
@@ -293,7 +297,7 @@ def calculate_ldscores(args,outldscore,plink_panel,noun):
                             '--l2',
                             '--bfile',plink_panel + str(chrom),
                             '--ld-wind-cm', "1",
-                            '--cont-bin','/mnt/data/tmp/temp_dscore.' + str(chrom) + '.cont_bin.gz',
+                            '--cont-bin',outldscore + '.' + str(chrom) + '.cont_bin.gz',
                             '--cont-breaks',args.cont_breaks,
                             '--thin-annot',
                             '--out', outldscore + "." + str(chrom)])
@@ -305,7 +309,7 @@ def calculate_ldscores_ldcts(args,outldscore,plink_panel,local_prefix):
                         '--l2',
                         '--bfile',plink_panel + str(chrom),
                         '--ld-wind-cm', "1",
-                        '--annot','/mnt/data/tmp/' + local_prefix+ '.' + str(chrom) + '.annot.gz',
+                        '--annot',outldscore + local_prefix + '.' + str(chrom) + '.annot.gz',
                         '--thin-annot',
                         '--out', outldscore + local_prefix + '.' + str(chrom),
                         '--print-snps',"/mnt/data/list.txt"])    
@@ -347,7 +351,7 @@ def write_report(report_name,sum_stat,main_panel,cond_panels,outfile):
         file.write("Conditional panel(s) used: " + cond_panels + '\n')
         file.write("Main output file(s): " + outfile + '\n')
 
-def ldsc_h2_exclude(infile, phname, params_file, ld_ref_panel, ld_w_panel, tg_f_panel,outfile,exclude_file):
+def ldsc_h2_exclude(infile, params_file, ld_ref_panel, ld_w_panel, tg_f_panel,outfile,exclude_file):
 
     """Perform partioning hertiability """
     subprocess.call(['/home/ldscore/ldsc-kt_exclude_files/ldsc.py',
@@ -364,7 +368,7 @@ def ldsc_h2_exclude(infile, phname, params_file, ld_ref_panel, ld_w_panel, tg_f_
 
     logging.info('Running estimate_h2 on: ' + infile)
 
-def ldsc_h2(infile, phname, params_file, ld_ref_panel, ld_w_panel, tg_f_panel,outfile):
+def ldsc_h2(infile, params_file, ld_ref_panel, ld_w_panel, tg_f_panel,outfile):
 
     """Perform partioning hertiability """
     subprocess.call(['/home/ldscore/ldsc-kt_exclude_files/ldsc.py',
@@ -379,6 +383,25 @@ def ldsc_h2(infile, phname, params_file, ld_ref_panel, ld_w_panel, tg_f_panel,ou
                                 '--out',outfile])
 
     logging.info('Running estimate_h2 on: ' + infile)
+
+
+
+def ldsc_h2_full(infile, ld_ref_panel, ld_w_panel, tg_f_panel,outfile):
+
+    """Perform partioning hertiability - full report"""
+    subprocess.call(['/home/ldscore/ldsc-kt_exclude_files/ldsc.py',
+                                '--h2',infile,
+                                '--ref-ld-chr',ld_ref_panel,
+                                '--w-ld-chr',ld_w_panel,
+                                '--frqfile-chr',tg_f_panel,
+                                '--overlap-annot',
+                                '--print-coefficients',
+                                '--out',outfile])
+
+    logging.info('Running estimate_h2 - full report on: ' + infile)
+
+
+
 
 
 if __name__ == "__main__":
@@ -427,14 +450,15 @@ if __name__ == "__main__":
     if (args.main_annot_rsids or args.main_annot_genes or args.main_annot_bed):
         noun = type_of_file('/mnt/data/' + os.path.basename(main_file))
         logging.info('The type of file that will be used in the analysis: '+noun)
+        outldscore='/mnt/data/outld/' + prefix
         if args.main_annot_bed:
-            prepare_annotations_bed(args,bed_file='/mnt/data/' + os.path.basename(main_file), plink_panel=plink_panel)
+            prepare_annotations_bed(args,bed_file='/mnt/data/' + os.path.basename(main_file), plink_panel=plink_panel,outldscore=outldscore)
         elif args.main_annot_genes:
-            prepare_annotations_genes(args,gene_list='/mnt/data/' + os.path.basename(main_file), plink_panel=plink_panel)
+            prepare_annotations_genes(args,gene_list='/mnt/data/' + os.path.basename(main_file), plink_panel=plink_panel,outldscore=outldscore)
         elif args.main_annot_rsids:
-            prepare_annotations_rsids(args,gene_list='/mnt/data/' + os.path.basename(main_file), plink_panel=plink_panel)
-        calculate_ldscores(args,outldscore='/mnt/data/outld/' + prefix,plink_panel=plink_panel,noun=noun)
-        name_main_ldscore = prefix + '.'    
+            prepare_annotations_rsids(args,gene_list='/mnt/data/' + os.path.basename(main_file), plink_panel=plink_panel,outldscore=outldscore)
+        calculate_ldscores(args,outldscore=outldscore,plink_panel=plink_panel,noun=noun)
+        name_main_ldscore = prefix + '.'   
     elif (args.main_annot_ldscores):
         temp_name_list =  [os.path.basename(x) for x in glob.glob('/mnt/data/outld/*')]
         name_main_ldscore = commonprefix(temp_name_list)
@@ -442,7 +466,7 @@ if __name__ == "__main__":
         with open('/mnt/data/file.ldcts','r') as ldcts_file:
             for line,geneset in zip(ldcts_file,os.listdir('/mnt/data/genesets/')):
                 local_prefix = line.split()[0]
-                prepare_annotations_genes_ldcts(args,gene_list='/mnt/data/genesets/' + geneset,plink_panel=plink_panel,local_prefix=local_prefix)
+                prepare_annotations_genes_ldcts(args,gene_list='/mnt/data/genesets/' + geneset,outldscore='/mnt/data/outld/',plink_panel=plink_panel,local_prefix=local_prefix)
                 calculate_ldscores_ldcts(args,outldscore='/mnt/data/outld/',plink_panel=plink_panel,local_prefix=local_prefix)
 
 	    
@@ -534,18 +558,32 @@ if __name__ == "__main__":
         subprocess.call(['gsutil','-m','cp','-r','/mnt/data/outld/*',os.path.join(args.export_ldscore_path,"")])
         # Writing report
     
+
     else:
         # Partitioning heritability
         outfiles_list = []
         for sumstats in list_sumstats_file:
             phname = os.path.basename(sumstats).replace('.sumstats.gz','')
-            outfile = '/mnt/data/' + phname + '.' + prefix + '.ldsc'
             outfiles_list.append('/mnt/data/' + phname + '.' + prefix + '.ldsc.cell_type_results.txt')
             logging.info('Running partition LDscores for ' + phname)
-            if not args.exclude_file:
-                ldsc_results = ldsc_h2(infile=sumstats, phname=phname, params_file='/mnt/data/params.ldcts',ld_ref_panel=ld_cond_panel, ld_w_panel=ld_w_panel,tg_f_panel=tg_f_panel,outfile=outfile)
+             # If full report, then run  LDscore for each panel
+            if args.full_report:
+                with open('/mnt/data/params.ldcts','r') as f:
+                    for x in f:
+                        x = x.strip().split("\t")
+                        ld_cond_panel_full=ld_cond_panel+","+x[1]
+                        ld_cond_panel_full=ld_cond_panel_full.replace(" ", "")
+                        print('ld_cond_panel_full: ' + ld_cond_panel_full)
+                        outfile_full = '/mnt/data/' + phname + '.' + prefix + '.' + x[0] + '.ldsc_full'
+                        ldsc_h2_full(infile=sumstats, ld_ref_panel=ld_cond_panel_full, ld_w_panel=ld_w_panel,tg_f_panel=tg_f_panel,outfile=outfile_full)
             else:
-                ldsc_results = ldsc_h2_exclude(infile=sumstats, phname=phname, params_file='/mnt/data/params.ldcts',ld_ref_panel=ld_cond_panel, ld_w_panel=ld_w_panel,tg_f_panel=tg_f_panel,outfile=outfile,exclude_file='/mnt/data/exclude.bed')
+                outfile = '/mnt/data/' + phname + '.' + prefix + '.ldsc'
+                if not args.exclude_file:
+                    ldsc_results = ldsc_h2(infile=sumstats, params_file='/mnt/data/params.ldcts',ld_ref_panel=ld_cond_panel, ld_w_panel=ld_w_panel,tg_f_panel=tg_f_panel,outfile=outfile)
+                else:
+                    ldsc_results = ldsc_h2_exclude(infile=sumstats, params_file='/mnt/data/params.ldcts',ld_ref_panel=ld_cond_panel, ld_w_panel=ld_w_panel,tg_f_panel=tg_f_panel,outfile=outfile,exclude_file='/mnt/data/exclude.bed')
+
+
 
         # Writing report
         write_report(report_name=prefix + '.report',sum_stat='\t'.join(ss_list),main_panel=main_file, cond_panels=ld_cond_panel, outfile='\t'.join(outfiles_list))
