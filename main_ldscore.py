@@ -572,10 +572,9 @@ if __name__ == "__main__":
                         x = x.strip().split("\t")
                         ld_cond_panel_full=ld_cond_panel+","+x[1]
                         ld_cond_panel_full=ld_cond_panel_full.replace(" ", "")
-                        print('ld_cond_panel_full: ' + ld_cond_panel_full)
                         outfile_full = '/mnt/data/' + phname + '.' + prefix + '.' + x[0] + '.ldsc_full'
                         ldsc_h2_full(infile=sumstats, ld_ref_panel=ld_cond_panel_full, ld_w_panel=ld_w_panel,tg_f_panel=tg_f_panel,outfile=outfile_full)
-                        outfiles_list.append('/mnt/data/' + phname + '.' + prefix + '.' + x[0] + '.ldsc_full.cell_type_results.txt')
+                        outfiles_list.append('/mnt/data/' + phname + '.' + prefix + '.' + x[0] + '.ldsc_full.results')
             else:
                 outfiles_list.append('/mnt/data/' + phname + '.' + prefix + '.ldsc.cell_type_results.txt')
                 outfile = '/mnt/data/' + phname + '.' + prefix + '.ldsc'
@@ -587,7 +586,7 @@ if __name__ == "__main__":
 
 
         # Writing report
-        write_report(report_name=prefix + '.report',sum_stat='\t'.join(ss_list),main_panel=main_file, cond_panels=ld_cond_panel, outfile='\t'.join(outfiles_list))
+        write_report(report_name='/mnt/data/' + prefix + '.report',sum_stat='\t'.join(ss_list),main_panel=main_file, cond_panels=ld_cond_panel, outfile='\t'.join(outfiles_list))
 
         if args.export_ldscore_path:
             logging.info('LDscores copied to ' + str(args.export_ldscore_path))
@@ -595,7 +594,7 @@ if __name__ == "__main__":
     
     # Writing the results
         logging.info('Results copied to ' + str(args.export_ldscore_path))
-        subprocess.call(['gsutil','cp','/mnt/data/*.ldsc*.cell_type_results.txt',os.path.join(args.out,"")])
-        subprocess.call(['gsutil','cp',prefix + '.report',os.path.join(args.out,"")])
+        subprocess.call(['gsutil','cp','/mnt/data/*ldsc*results',os.path.join(args.out,"")])
+        subprocess.call(['gsutil','cp','/mnt/data/' + prefix + '.report',os.path.join(args.out,"")])
 
     logging.info('FINITO!')
