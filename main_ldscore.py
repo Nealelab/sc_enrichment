@@ -594,7 +594,7 @@ if __name__ == "__main__":
     
     # Writing the results
         logging.info('Results copied to ' + str(args.export_ldscore_path))
-        subprocess.call(['gsutil','cp','/mnt/data/*ldsc*results',os.path.join(args.out,"")])
+        subprocess.call(['gsutil','cp','/mnt/data/*ldsc*results.txt',os.path.join(args.out,"")])
         subprocess.call(['gsutil','cp','/mnt/data/' + prefix + '.report',os.path.join(args.out,"")])
 
     logging.info('FINITO!')
