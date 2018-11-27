@@ -452,11 +452,11 @@ if __name__ == "__main__":
         logging.info('The type of file that will be used in the analysis: '+noun)
         outldscore='/mnt/data/outld/' + prefix
         if args.main_annot_bed:
-            prepare_annotations_bed(args,bed_file='/mnt/data/' + os.path.basename(main_file), plink_panel=plink_panel,outldscore=outldscore)
+            prepare_annotations_bed(args,bed_file='/mnt/data/' + os.path.basename(main_file),outldscore=outldscore, plink_panel=plink_panel)
         elif args.main_annot_genes:
-            prepare_annotations_genes(args,gene_list='/mnt/data/' + os.path.basename(main_file), plink_panel=plink_panel,outldscore=outldscore)
+            prepare_annotations_genes(args,gene_list='/mnt/data/' + os.path.basename(main_file),outldscore=outldscore, plink_panel=plink_panel)
         elif args.main_annot_rsids:
-            prepare_annotations_rsids(args,gene_list='/mnt/data/' + os.path.basename(main_file), plink_panel=plink_panel,outldscore=outldscore)
+            prepare_annotations_rsids(args,gene_list='/mnt/data/' + os.path.basename(main_file),outldscore=outldscore, plink_panel=plink_panel)
         calculate_ldscores(args,outldscore=outldscore,plink_panel=plink_panel,noun=noun)
         name_main_ldscore = prefix + '.'   
     elif (args.main_annot_ldscores):
@@ -483,11 +483,11 @@ if __name__ == "__main__":
             noun = type_of_file('/mnt/data/' + k_name)
             subprocess.call(['mkdir','/mnt/data/outcondld/' + k_name])
             if args.condition_annot_bed:
-                prepare_annotations_bed(args,bed_file='/mnt/data/' + k_name, plink_panel=plink_panel)
+                prepare_annotations_bed(args,bed_file='/mnt/data/' + k_name,outldscore='/mnt/data/outcondld/' + k_name + '/' + k_name, plink_panel=plink_panel)
             elif args.condition_annot_genes:
-                prepare_annotations_genes(args,gene_list='/mnt/data/' + k_name, plink_panel=plink_panel)
+                prepare_annotations_genes(args,gene_list='/mnt/data/' + k_name,outldscore='/mnt/data/outcondld/' + k_name + '/' + k_name, plink_panel=plink_panel)
             elif args.condition_annot_rsids:
-                prepare_annotations_rsids(args,gene_list='/mnt/data/' + k_name, plink_panel=plink_panel)
+                prepare_annotations_rsids(args,gene_list='/mnt/data/' + k_name,outldscore='/mnt/data/outcondld/' + k_name + '/' + k_name, plink_panel=plink_panel)
             calculate_ldscores(args,outldscore='/mnt/data/outcondld/' + k_name + '/' + k_name,plink_panel=plink_panel,noun=noun)   
     
     # Save parameter file
